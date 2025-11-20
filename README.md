@@ -3,7 +3,7 @@
 <!-- markdownlint-disable no-duplicate-header -->
 
 <div align='center'>
-    <img src='https://i.imgur.com/MgIfib9.gif' width='20%' alt='vikala' />
+    <img src='https://miau.femboy.beauty/ETZhsf.gif' width='20%' alt='vikala' />
 </div>
 <hr>
 
@@ -78,4 +78,5 @@ This is essentially a personal project, but being provided and serviced to the p
 > Future feature implementations
 >> <i>Anime/Manga</i>
 >> <i>Images</i>
+
 >> <i>Actions</i>
