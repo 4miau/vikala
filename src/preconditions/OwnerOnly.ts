@@ -2,28 +2,27 @@ import type { ChatInputCommandInteraction, ContextMenuCommandInteraction, Messag
 import {
 	AllFlowsPrecondition, Identifiers, MessageCommand, Precondition, PreconditionContext, PreconditionResult
 } from '@sapphire/framework'
+import { ApplyOptions } from '@sapphire/decorators'
 
+ApplyOptions<Precondition.Options>({ name: 'OwnerOnly' })
 export class OwnerOnly extends Precondition {
-	public constructor(ctx: Precondition.LoaderContext) {
-		super(ctx, {
-			name: 'OwnerOnly',
-			position: 0
-		})
+	client = this.container.client
+
+	public override messageRun(message: Message<boolean>, command: MessageCommand, context: PreconditionContext): PreconditionResult {
+		return this.checkOwner(message.author.id)
 	}
 
-	public messageRun(message: Message<boolean>, command: MessageCommand, context: PreconditionContext): PreconditionResult {
-		return message.author.id === '' ? this.ok() : this.makeSharedError()
+	public override chatInputRun(interaction: ChatInputCommandInteraction): AllFlowsPrecondition.Result {
+		return this.checkOwner(interaction.user.id)
 	}
 
-	public chatInputRun(interaction: ChatInputCommandInteraction): AllFlowsPrecondition.Result {
-		return interaction.user.id === '' ? this.ok() : this.makeSharedError();
+	public override contextMenuRun(interaction: ContextMenuCommandInteraction): AllFlowsPrecondition.Result {
+		return this.checkOwner(interaction.user.id)
 	}
 
-	public contextMenuRun(interaction: ContextMenuCommandInteraction): AllFlowsPrecondition.Result {
-		return interaction.user.id === '' ? this.ok() : this.makeSharedError();
-	}
+	private checkOwner(id: string) { return id === this.client.owner ? this.ok() : this.ownerOnlyError() }
 
-	private makeSharedError(): AllFlowsPrecondition.Result {
+	private ownerOnlyError(): AllFlowsPrecondition.Result {
 		return this.error({
 			identifier: Identifiers.PreconditionUnavailable,
 			message: 'Only the owner can run this command.',

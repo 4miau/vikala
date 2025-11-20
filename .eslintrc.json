@@ -6,7 +6,7 @@
     "extends": "eslint:recommended",
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
-        "ecmaVersion": 2017,
+        "ecmaVersion": 2024,
         "sourceType": "module"
     },
     "plugins": [

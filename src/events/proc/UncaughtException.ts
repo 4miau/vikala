@@ -9,7 +9,7 @@ export default class UncaughtException extends Listener {
 
     public override run(err: Error) {
         const container = this.container
-        
+
         container.logger.fatal('ERROR', `Uncaught Exception: ${err.stack}`)
         process.exit(1)
     }

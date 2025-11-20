@@ -3,14 +3,14 @@
 <!-- markdownlint-disable no-duplicate-header -->
 
 <div align='center'>
-    <img src='https://i.imgur.com/MgIfib9.gif' width='20%' alt='kikuri' />
+    <img src='https://i.imgur.com/MgIfib9.gif' width='20%' alt='vikala' />
 </div>
 <hr>
 
-# Kikuri
+# Vikala
 
 
-- [Kikuri](#kikuri)
+- [Vikala](#vikala)
   - [1. Introduction](#1-introduction)
   - [2. Features](#2-features)
   - [3. Developing](#3-developing)
@@ -23,7 +23,7 @@
 
 ## 1. Introduction
 
-Kikuri is an up-to-date private WIP multi-purpose discord bot created mainly using the framework Sapphire, it's a planned extension off my personal bot Abigail Williams based of the old Discord-akairo and Discord.js v12 libraries. A lot of the features will be made up to date as well as a lot of the commands that were implemented before will be scrapped as they were based on what I required in the past.
+Vikala is an up-to-date private WIP multi-purpose discord bot created mainly using the framework Sapphire, it's a planned extension off my personal bot Abigail Williams based of the old Discord-akairo and Discord.js v12 libraries. A lot of the features will be made up to date as well as a lot of the commands that were implemented before will be scrapped as they were based on what I required in the past.
 
 ## 2. Features
 
@@ -40,7 +40,7 @@ As the bot is in very early stage listing a ton of upcoming features will be put
 
 ## 4. Links
 
-
+- [Discord](https://discord.gg/Dgn3ta6dA3)
 
 ## 5. Contributing
 
@@ -64,35 +64,18 @@ Hey, I'm miau! I just create things for fun with my silly little coding. You can
 
 This is essentially a personal project, but being provided and serviced to the public. I am not a massively experienced coder in terms of producing production code onto GitHub so I appreciate any contributions anyone feels like making. I just love to chill and do my own thing.
 
-[⬆ Back to the top](#kikuri)
+[⬆ Back to the top](#vikala)
 
 ### Meaningless Dev Progress Notes
 
 > Currently Working on:
->> - General/Utility
->> - Twitch/YouTube
+>> <i>Moderation</i>
+>> <i>Starboard</i>
 
 > Files to revamp:
->> - SettingsProvider.ts
->> - Prototypes.ts
 
-> Testing:
->> - Implement Mocha/Jest
 
 > Future feature implementations
->> <i>Game Search</i>
->> - Steam
->> - Epic
->> - Key Sites
-
->> <i>Steam Games</i>
->> <i>Marvel Rivals</i>
->> <i>Granblue Stats</i>
->> <i>Granblue Links/Guide</i>
->> <i>Moderation</i>
->> <i>Starboard?</i>
 >> <i>Anime/Manga</i>
 >> <i>Images</i>
->> <i>Logging</i>
->> <i>Reaction Roles</i>
 >> <i>Actions</i>

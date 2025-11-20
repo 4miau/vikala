@@ -2,4 +2,7 @@
 .env
 dist
 node_modules
-src/templates
+src/keys
+templates
+.github
+.results
