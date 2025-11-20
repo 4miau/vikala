@@ -8,5 +8,6 @@ export class EventListener extends Listener {
 
     public override run(message: Message) {
         this.client.sheets.handleIsVHS(message)
+        this.client.leveling.handleMessageXP(message.member, message.channel)
     }
 }

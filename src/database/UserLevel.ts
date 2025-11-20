@@ -17,14 +17,12 @@ const userLevelSchema = new Schema({
     userId: {
         type: String,
         required: true,
-        index: true,
-        unique: true
+        index: true
     },
     guildId: {
         type: String,
         required: true,
-        index: true,
-        unique: true
+        index: true
     },
     level: {
         type: Number,
@@ -56,6 +54,7 @@ const userLevelSchema = new Schema({
     }
 }, { collection: 'userlevels', timestamps: true })
 
+userLevelSchema.index({ userId: 1, guildId: 1 }, { unique: true })
 userLevelSchema.index({ guildId: 1, level: -1, xp: -1 })
 
 const UserLevel = mongoose.model<IUserLevel>('UserLevel', userLevelSchema)

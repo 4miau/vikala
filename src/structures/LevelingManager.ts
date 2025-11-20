@@ -145,7 +145,6 @@ export default class LevelingManager {
     }
 
     async handleMessageXP(member: GuildMember | null, channel: any): Promise<void> {
-        // Validation logic moved from event
         if (!member || !member.guild || member.user.bot) return
         if (!channel || channel.isDMBased?.()) return
 

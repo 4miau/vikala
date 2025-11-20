@@ -187,7 +187,7 @@ export class Prune extends Subcommand {
 
     public async pruneContainsMsg(message: Message, args: Args) {
         if (!message.channel.isSendable()) return
-        const text = await args.restResult('string').then(res => res.isOk()() ? res.unwrap() : null)
+        const text = await args.restResult('string').then(res => res.isOk() ? res.unwrap() : null)
         if (!text) return message.channel.send({ content: 'Please provide text to search for in messages.' })
 
         const amount = args.getOptionResult('amount', 'a').map(val => parseInt(val)).unwrapOrElse(() => 50)

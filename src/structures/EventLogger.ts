@@ -64,7 +64,7 @@ export default class EventLogger {
     }
 
     validate(guild: Guild, type: string) {
-        const isValid = this.client.settings.get(guild, `logs.${type}`, null)
+        const isValid: boolean = this.client.settings.get(guild, `logs.${type}`, false)
         return isValid ? true : false
     }
 
@@ -234,9 +234,9 @@ export default class EventLogger {
             'message',
             Colors.Yellow,
             {
-                targetUser: { username: oldM.author.username, id: oldM.author.id },
-                channelId: oldM.channel.id,
-                channelName: (oldM.channel as GuildChannel).name,
+                targetUser: { username: newM.author.username, id: newM.author.id },
+                channelId: newM.channel.id,
+                channelName: (newM.channel as GuildChannel).name,
                 beforeContent: oldM.content,
                 afterContent: newM.content,
                 messageId: newM.id
@@ -377,9 +377,9 @@ export default class EventLogger {
 
     async userUpdatedLog(guild: Guild, oldUser: User, newUser: User) {
         const changes = compareUserChanges(oldUser, newUser)
-        
+
         if (!changes) return null
-        
+
         return this.createLogEntry(
             guild,
             this.LOGS[13] as EventActions,
@@ -418,9 +418,9 @@ export default class EventLogger {
 
     async memberUpdatedLog(oldMember: GuildMember, newMember: GuildMember) {
         const changes = compareMemberChanges(oldMember, newMember)
-        
+
         if (!changes) return null
-        
+
         return this.createLogEntry(
             newMember.guild,
             this.LOGS[16] as EventActions,

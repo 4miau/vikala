@@ -22,7 +22,7 @@ export class SetVHSChannel extends Command {
         const channel = await args.pickResult('sendablechannel').then(res => res.isOk() ? res.unwrap() as TextChannel : null)
         if (!channel) return message.channel.send({ content: 'Please provide a valid sendable channel.' })
 
-        this.client.settings.set(message.guild, 'vhsChannel', channel.id)
+        this.client.settings.set('global', 'vhsChannel', channel.id)
         return message.channel.send({ content: 'VHS Channel has been set.' })
     }
 

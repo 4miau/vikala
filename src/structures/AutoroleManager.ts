@@ -13,7 +13,7 @@ export default class AutoroleManager {
 
     public async handleMemberJoin(member: GuildMember): Promise<void> {
         const rules = await this.getActiveRules(member.guild.id, 'join')
-        
+
         for (const rule of rules) {
             if (await this.shouldApplyRule(member, rule)) {
                 if (rule.delay > 0) {
@@ -27,7 +27,7 @@ export default class AutoroleManager {
 
     public async handleMemberBoost(member: GuildMember): Promise<void> {
         const rules = await this.getActiveRules(member.guild.id, 'boost')
-        
+
         for (const rule of rules) {
             if (await this.shouldApplyRule(member, rule)) {
                 await this.applyRole(member, rule)
@@ -36,10 +36,10 @@ export default class AutoroleManager {
     }
 
     private async getActiveRules(guildId: string, type: 'join' | 'time' | 'boost'): Promise<IAutoroleRule[]> {
-        return await AutoroleRule.find({ 
-            guildId, 
-            type, 
-            enabled: true 
+        return await AutoroleRule.find({
+            guildId,
+            type,
+            enabled: true
         }).sort({ priority: -1 })
     }
 
@@ -63,7 +63,7 @@ export default class AutoroleManager {
             if (!hasAllRequired) return false
         }
         if (conditions.excludeRoles && conditions.excludeRoles.length > 0) {
-            const hasExcludeRole = conditions.excludeRoles.some(roleId => 
+            const hasExcludeRole = conditions.excludeRoles.some(roleId =>
                 member.roles.cache.has(roleId)
             )
             if (hasExcludeRole) return false
@@ -74,7 +74,7 @@ export default class AutoroleManager {
 
     private scheduleDelayedRole(member: GuildMember, rule: IAutoroleRule): void {
         const timeoutKey = `${member.id}-${rule.roleId}`
-        
+
         if (this.delayedRoles.has(timeoutKey)) {
             clearTimeout(this.delayedRoles.get(timeoutKey)!)
         }
@@ -101,7 +101,7 @@ export default class AutoroleManager {
             if (!role) return
 
             await member.roles.add(role, `Autorole: ${rule.type}`)
-            
+
             if (rule.removeConflicting) {
                 await this.handleConflictingRoles(member, rule)
             }

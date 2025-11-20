@@ -22,7 +22,6 @@ const autoroleRuleSchema = new Schema({
     guildId: {
         type: String,
         required: true,
-        unique: true,
         index: true,
     },
     type: {

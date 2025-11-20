@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Message, SendableChannels } from 'discord.js'
+import { Message, SendableChannels } from 'discord.js'
 import ms from 'ms'
 
 export function yes(content: string) {
@@ -29,4 +29,9 @@ export async function getInput(chnl: SendableChannels, options: Options): Promis
     } catch {
         return []
     }
+}
+
+export async function timerMessage(m: Message, delay: number = ms('5s')) {
+    return new Promise(resolve => setTimeout(resolve, delay))
+        .then(() => m?.delete() )
 }

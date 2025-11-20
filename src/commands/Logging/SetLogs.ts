@@ -8,7 +8,7 @@ declare type LogType = 'channel' | 'message' | 'guild' | 'moderation' | 'role' |
 
 @ApplyOptions<Subcommand.Options>({
     name: 'setlogs',
-    aliases: ['setlog'],
+    aliases: ['setlog', 'logs'],
     description: 'Set a channel to post logs (use help for more details).',
     detailedDescription: 'Sets a channel to post logs for various events being: messages, guild changes, moderation actions, channel updates, roles and users.\n' +
         'There are 6 flags: channel, message, guild, moderation, role, and user. Using the flag "all" will affect everything preceding.',
@@ -33,22 +33,22 @@ export class SetLogs extends Subcommand {
         if (!message.channel.isSendable()) return
 
         const logChannels = this.getLogChannels(message.guild)
-        return message.channel.send({ content: logChannels.map((chnl) => `:inbox_tray: ${chnl.key}: ${chnl.defaultValue}`).join('\n') })
+        return message.channel.send({ content: logChannels.map((chnl) => `:inbox_tray: ${capitalize(chnl.key.split('.').pop())}: ${chnl.value}`).join('\n') })
     }
 
     public async inputList(interaction: Subcommand.ChatInputCommandInteraction) {
         const logChannels = this.getLogChannels(interaction.guild)
-        return interaction.reply({ content: logChannels.map((chnl) => `:inbox_tray: ${chnl.key}: ${chnl.defaultValue}`).join('\n'), flags: ['Ephemeral'] })
+        return interaction.reply({ content: logChannels.map((chnl) => `:inbox_tray: ${capitalize(chnl.key.split('.').pop())}: ${chnl.value}`).join('\n'), flags: ['Ephemeral'] })
     }
 
-    private getLogChannels(guild: Guild): { key: string, defaultValue: string }[]  {
+    private getLogChannels(guild: Guild)  {
         return this.client.settings.getArr(guild, [
-            { key: 'logs.channel', defaultValue: 'N/A' },
-            { key: 'logs.message', defaultValue: 'N/A' },
-            { key: 'logs.guild', defaultValue: 'N/A' },
-            { key: 'logs.moderation', defaultValue: 'N/A' },
-            { key: 'logs.role', defaultValue: 'N/A' },
-            { key: 'logs.user', defaultValue: 'N/A' }
+            { key: 'logs.channel', value: 'N/A' },
+            { key: 'logs.message', value: 'N/A' },
+            { key: 'logs.guild', value: 'N/A' },
+            { key: 'logs.moderation', value: 'N/A' },
+            { key: 'logs.role', value: 'N/A' },
+            { key: 'logs.user', value: 'N/A' }
         ])
     }
 
@@ -60,12 +60,14 @@ export class SetLogs extends Subcommand {
 
         const logTypes: LogType[] = this.parseLogTypeFlags(args)
 
-        this.setLogTypes(logTypes, message, channel.id)
-        return message.channel.send({ content: `Channel Logs set to ${channel}.` })
+        await this.setLogTypes(logTypes, message, channel.id)
+        return message.channel.send({ content: `${capitalize(logTypes.join(', '))} Logs set to ${channel}.` })
     }
 
-    inputSet(interaction: Subcommand.ChatInputCommandInteraction) {
-        const channel = interaction.options.getChannel('channel', true, [ChannelType.GuildText])
+    async inputSet(interaction: Subcommand.ChatInputCommandInteraction) {
+        const channel = interaction.options.getChannel('channel', true, [
+            ChannelType.GuildText, ChannelType.GuildForum, ChannelType.GuildAnnouncement, ChannelType.PublicThread, ChannelType.PrivateThread
+        ])
         if (!channel) return interaction.reply({ content: 'Provide a valid channel.', flags: ['Ephemeral'] })
 
         const flag = interaction.options.getString('logtype', true).toLowerCase() as LogType
@@ -73,7 +75,7 @@ export class SetLogs extends Subcommand {
             return interaction.reply({ content: 'Provide a valid log type.', flags: ['Ephemeral'] })
         }
 
-        this.setLogTypes([flag], interaction, channel.id)
+        await this.setLogTypes([flag], interaction, channel.id)
         return interaction.reply({ content: `${capitalize(flag)} Logs set to ${channel}.`, flags: ['Ephemeral'] })
     }
 
@@ -82,17 +84,17 @@ export class SetLogs extends Subcommand {
 
         const logTypes: LogType[] = this.parseLogTypeFlags(args)
 
-        this.removeLogTypes(logTypes, message)
+        await this.removeLogTypes(logTypes, message)
         return message.channel.send({ content: `Removed selected log types.` })
     }
 
-    inputRemove(interaction: Subcommand.ChatInputCommandInteraction) {
+    async inputRemove(interaction: Subcommand.ChatInputCommandInteraction) {
         const flag = interaction.options.getString('logtype', true).toLowerCase() as LogType
         if (!flag || !['channel', 'message', 'guild', 'moderation', 'role', 'user'].includes(flag)) {
             return interaction.reply({ content: 'Provide a valid log type.', flags: ['Ephemeral'] })
         }
 
-        this.removeLogTypes([flag], interaction)
+        await this.removeLogTypes([flag], interaction)
         return interaction.reply({ content: `Removed ${capitalize(flag)} Logs.`, flags: ['Ephemeral'] })
     }
 
@@ -106,12 +108,12 @@ export class SetLogs extends Subcommand {
         return logTypes
     }
 
-    private setLogTypes(types: LogType[], m: Message | Subcommand.ChatInputCommandInteraction, channelId: string) {
-        for (const type of types) this.client.settings.set(m.guild, `logs.${type}`, channelId)
+    private async setLogTypes(types: LogType[], m: Message | Subcommand.ChatInputCommandInteraction, channelId: string) {
+        for (const type of types) await this.client.settings.set(m.guild, `logs.${type}`, channelId)
     }
 
-    private removeLogTypes(types: LogType[], m: Message | Subcommand.ChatInputCommandInteraction) {
-        for (const type of types) this.client.settings.delete(m.guild, `logs.${type}`)
+    private async removeLogTypes(types: LogType[], m: Message | Subcommand.ChatInputCommandInteraction) {
+        for (const type of types) await this.client.settings.delete(m.guild, `logs.${type}`)
     }
 
     public override registerApplicationCommands(registry: Subcommand.Registry) {
