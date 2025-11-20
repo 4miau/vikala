@@ -1,0 +1,14 @@
+import { Listener } from '@sapphire/framework'
+import { ApplyOptions } from '@sapphire/decorators'
+import { Events, GuildChannel } from 'discord.js'
+
+@ApplyOptions<Listener.Options>({
+    event: Events.ChannelDelete
+})
+export class EventListener extends Listener {
+    client = this.container.client
+
+    public override async run(channel: GuildChannel) {
+        await this.client.events.channelDeletedLog(channel)
+    }
+}
