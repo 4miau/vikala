@@ -62,7 +62,6 @@ export class Build extends Command {
         const basePath = modulePaths[type]
         if (!store || !basePath) return sendFn({ content: 'Invalid module type provided.' })
 
-        // Find the actual file path
         const foundFilePath = this.findModuleFile(basePath, file)
         if (!foundFilePath) {
             return sendFn({ content: `${capitalize(type)} \`${file}\` was not found.` })
@@ -75,26 +74,21 @@ export class Build extends Command {
             }
             return sendFn({ content: `${capitalize(type)} \`${file}\` has been built successfully.` })
         } catch (error) {
-            // Handle both file not found and other loading errors uniformly
             return sendFn({ content: `${capitalize(type)} \`${file}\` was not found.` })
         }
     }
 
     private findModuleFile(basePath: string, fileName: string): string | null {
-        // Normalize the filename - ensure it has .js extension
         const normalizedFile = fileName.endsWith('.js') ? fileName : `${fileName}.js`
 
-        // 1. Try exact path first (fastest) - handles Category/File.js format
         if (normalizedFile.includes('/')) {
             const exactPath = join(basePath, normalizedFile)
             if (existsSync(exactPath)) return normalizedFile
         }
 
-        // 2. Try direct file in base path
         const directPath = join(basePath, normalizedFile)
         if (existsSync(directPath)) return normalizedFile
 
-        // 3. Recursive search through subdirectories
         return this.searchInDirectories(basePath, normalizedFile, '')
     }
 
@@ -104,20 +98,17 @@ export class Build extends Command {
         try {
             const items = readdirSync(currentPath)
 
-            // First, check for the file in current directory
             for (const item of items) {
                 const fullPath = join(currentPath, item)
                 const stat = statSync(fullPath)
 
                 if (stat.isFile()) {
-                    // Case-insensitive file matching
                     if (item.toLowerCase() === targetFile.toLowerCase()) {
                         return relativePath ? `${relativePath}/${item}` : item
                     }
                 }
             }
 
-            // Then, recursively search subdirectories
             for (const item of items) {
                 const fullPath = join(currentPath, item)
                 const stat = statSync(fullPath)
@@ -129,7 +120,6 @@ export class Build extends Command {
                 }
             }
         } catch {
-            // Ignore permission errors or other filesystem issues
         }
 
         return null
