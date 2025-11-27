@@ -9,6 +9,11 @@ export class EventListener extends Listener {
     client = this.container.client
 
     public override async run(message: Message) {
+        if (message.partial) {
+            try { message = await message.fetch() }
+            catch { return }
+        }
+
         await this.client.events.deletedMessageLog(message)
     }
 }

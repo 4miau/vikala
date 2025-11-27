@@ -27,6 +27,14 @@ export default class EventLogger {
 
     constructor(client: Vikala) { this.client = client }
 
+    private async tryFetch<T>(fetchFn: () => Promise<T>): Promise<T | null> {
+        try {
+            return await fetchFn()
+        } catch {
+            return null
+        }
+    }
+
     async getEventLog(guild: Guild, caseId: number): Promise<IEventLog | null> {
         return EventLog.findOne({ guildId: guild.id, caseId: caseId })
     }
@@ -37,12 +45,18 @@ export default class EventLogger {
             .limit(limit)
     }
 
+    async getEventLogsByUser(guild: Guild, userId: string, limit: number = 15): Promise<IEventLog[]> {
+        return EventLog.find({ guildId: guild.id, targetId: userId })
+            .sort({ caseId: -1 })
+            .limit(limit)
+    }
+
     formatEventLog(eventLog: IEventLog): string {
         const date = eventLog.createdAt.toISOString().split('T')[1].split('.')[0]
         const emoji = this.getEmoji(eventLog.eventType)
         const actionPhrase = this.getPhrase(eventLog.eventType)
 
-        let logMessage = `\`[${date}]\` \`${eventLog.caseId}\` \`${emoji}\``
+        let logMessage = `\`[${date}]\` \`${eventLog.caseId}\` ${emoji}`
 
         if (eventLog.targetId) {
             logMessage += ` **${eventLog.targetName}** (${eventLog.targetId})`
@@ -50,7 +64,13 @@ export default class EventLogger {
             logMessage += ` **${eventLog.targetName}**`
         }
 
-        logMessage += ` ${actionPhrase}`
+        logMessage += `${actionPhrase.startsWith('\'') ? '' : ' '}${actionPhrase}`
+
+        if (eventLog.eventType.includes('MESSAGE') && eventLog.extras.channelName) {
+            logMessage += `<#${eventLog.extras.channelId}>`
+        } else if (eventLog.extras.channelName && (eventLog.eventType.includes('CHANNEL') || eventLog.eventType.includes('INVITE'))) {
+            logMessage += eventLog.extras.channelName
+        }
 
         if (eventLog.extras.content) {
             logMessage += `\n\`[ Content ]\` ${eventLog.extras.content}`
@@ -61,6 +81,21 @@ export default class EventLogger {
         }
 
         return logMessage
+    }
+
+    private async sendLogToChannel(guild: Guild, logType: string, logMessage: string, embed: EmbedBuilder | null = null): Promise<void> {
+        const channelId = this.client.settings.get(guild, `logs.${logType}`, null)
+        if (!channelId) return
+
+        const channel = guild.channels.cache.get(channelId)
+        if (!channel || !channel.isTextBased()) return
+
+        this.tryFetch(async () => {
+            const messageOptions: any = { content: logMessage }
+            if (embed) messageOptions.embeds = [embed]
+
+            await channel.send(messageOptions)
+        })
     }
 
     validate(guild: Guild, type: string) {
@@ -87,7 +122,7 @@ export default class EventLogger {
             afterContent?: string,
             messageId?: string
         } = {}
-    ) {
+    ): Promise<void> {
         if (!this.validate(guild, logType)) return
 
         const caseId = await this.client.settings.getNextCaseId(guild)
@@ -101,6 +136,7 @@ export default class EventLogger {
             targetName: data.channelName || data.targetName,
             extras: {
                 channelId: data.channelId,
+                channelName: data.channelName,
                 content: data.content,
                 beforeContent: data.beforeContent,
                 afterContent: data.afterContent,
@@ -113,11 +149,11 @@ export default class EventLogger {
         const emoji = this.getEmoji(eventType)
         const actionPhrase = this.getPhrase(eventType)
 
-        let logMessage = `\`[${date}]\` \`${caseId}\` \`${emoji}\``
+        let logMessage = `\`[${date}]\` \`${caseId}\` ${emoji}`
 
         if (data.targetUser) logMessage += ` **${data.targetUser.username}** (${data.targetUser.id})`
-        logMessage += ` ${actionPhrase}`
-        if (data.targetName || data.channelName) logMessage += ` \`${data.targetName || data.channelName}\``
+        logMessage += `${actionPhrase.startsWith('\'') ? '' : ' '}${actionPhrase}`
+        if (data.targetName || data.channelName) logMessage += `${data.targetName || `<#${data.channelId}>`}`
 
         logMessage += '\n'
 
@@ -130,7 +166,7 @@ export default class EventLogger {
             .setColor(color)
             .setDescription(embedDescription) : null
 
-        return [logMessage, embed]
+        await this.sendLogToChannel(guild, logType, logMessage, embed)
     }
 
     getEmoji(action: EventActions): string {
@@ -179,7 +215,7 @@ export default class EventLogger {
             case 'MESSAGE_BULK_DELETED':
                 return 'messages were deleted in '
             case 'CHANNEL_CREATED':
-                return 'channel was created:'
+                return 'channel was created: '
             case 'CHANNEL_UPDATED':
                 return 'channel was updated: '
             case 'CHANNEL_DELETED':
@@ -208,44 +244,44 @@ export default class EventLogger {
     }
 
     async deletedMessageLog(m: Message) {
-        if (this.isBot(m.author)) return null
+        if (!m.guild || !m.author || this.isBot(m.author)) return null
 
-        return this.createLogEntry(
-            m.guild,
+        return this.tryFetch(() => this.createLogEntry(
+            m.guild!,
             this.LOGS[2] as EventActions,
             'message',
             Colors.Red,
             {
-                targetUser: { username: m.author.username, id: m.author.id },
+                targetUser: { username: m.author!.username || m.author!.displayName, id: m.author!.id },
                 channelId: m.channel.id,
-                channelName: (m.channel as GuildChannel).name,
+                channelName: (m.channel as GuildChannel).name || 'Unknown Channel',
                 content: m.content,
                 messageId: m.id
             }
-        )
+        ))
     }
 
     async editedMessageLog(oldM: Message, newM: Message) {
-        if (this.isBot(oldM.author)) return null
+        if (!newM.guild || !newM.author || this.isBot(newM.author)) return null
 
-        return this.createLogEntry(
-            oldM.guild,
+        return this.tryFetch(() => this.createLogEntry(
+            newM.guild!,
             this.LOGS[1] as EventActions,
             'message',
             Colors.Yellow,
             {
-                targetUser: { username: newM.author.username, id: newM.author.id },
+                targetUser: { username: newM.author!.username, id: newM.author!.id },
                 channelId: newM.channel.id,
-                channelName: (newM.channel as GuildChannel).name,
+                channelName: (newM.channel as GuildChannel).name || 'Unknown Channel',
                 beforeContent: oldM.content,
                 afterContent: newM.content,
                 messageId: newM.id
             }
-        )
+        ))
     }
 
     async bulkDeletedMessagesLog(guild: Guild, channelName: string, count: number) {
-        return this.createLogEntry(
+        return this.tryFetch(() => this.createLogEntry(
             guild,
             this.LOGS[3] as EventActions,
             'message',
@@ -254,11 +290,11 @@ export default class EventLogger {
                 channelName: channelName,
                 content: `${count} messages were bulk deleted`
             }
-        )
+        ))
     }
 
     async channelCreatedLog(channel: GuildChannel) {
-        return this.createLogEntry(
+        return this.tryFetch(() => this.createLogEntry(
             channel.guild,
             this.LOGS[4] as EventActions,
             'channel',
@@ -267,15 +303,14 @@ export default class EventLogger {
                 channelId: channel.id,
                 channelName: channel.name
             }
-        )
+        ))
     }
 
     async channelUpdatedLog(oldChannel: GuildChannel, newChannel: GuildChannel) {
         const changes = compareChannelChanges(oldChannel, newChannel)
-
         if (!changes) return null
 
-        return this.createLogEntry(
+        return this.tryFetch(() => this.createLogEntry(
             oldChannel.guild,
             this.LOGS[5] as EventActions,
             'channel',
@@ -285,11 +320,11 @@ export default class EventLogger {
                 targetName: newChannel.name,
                 content: changes
             }
-        )
+        ))
     }
 
     async channelDeletedLog(channel: GuildChannel) {
-        return this.createLogEntry(
+        return this.tryFetch(() => this.createLogEntry(
             channel.guild,
             this.LOGS[6] as EventActions,
             'channel',
@@ -298,11 +333,11 @@ export default class EventLogger {
                 channelId: channel.id,
                 channelName: channel.name
             }
-        )
+        ))
     }
 
     async roleCreatedLog(guild: Guild, roleName: string) {
-        return this.createLogEntry(
+        return this.tryFetch(() => this.createLogEntry(
             guild,
             this.LOGS[7] as EventActions,
             'role',
@@ -310,15 +345,14 @@ export default class EventLogger {
             {
                 targetName: roleName
             }
-        )
+        ))
     }
 
     async roleUpdatedLog(oldRole: Role, newRole: Role) {
         const changes = compareRoleChanges(oldRole, newRole)
-
         if (!changes) return null
 
-        return this.createLogEntry(
+        return this.tryFetch(() => this.createLogEntry(
             oldRole.guild,
             this.LOGS[8] as EventActions,
             'role',
@@ -327,11 +361,11 @@ export default class EventLogger {
                 targetName: newRole.name,
                 content: changes
             }
-        )
+        ))
     }
 
     async roleDeletedLog(guild: Guild, roleName: string) {
-        return this.createLogEntry(
+        return this.tryFetch(() => this.createLogEntry(
             guild,
             this.LOGS[9] as EventActions,
             'role',
@@ -339,20 +373,20 @@ export default class EventLogger {
             {
                 targetName: roleName
             }
-        )
+        ))
     }
 
     async guildUpdatedLog(guild: Guild) {
-        return this.createLogEntry(
+        return this.tryFetch(() => this.createLogEntry(
             guild,
             this.LOGS[10] as EventActions,
             'guild',
             Colors.Yellow
-        )
+        ))
     }
 
     async inviteCreatedLog(guild: Guild, inviteCode: string) {
-        return this.createLogEntry(
+        return this.tryFetch(() => this.createLogEntry(
             guild,
             this.LOGS[11] as EventActions,
             'guild',
@@ -360,11 +394,11 @@ export default class EventLogger {
             {
                 targetName: inviteCode
             }
-        )
+        ))
     }
 
     async inviteDeletedLog(guild: Guild, inviteCode: string) {
-        return this.createLogEntry(
+        return this.tryFetch(() => this.createLogEntry(
             guild,
             this.LOGS[12] as EventActions,
             'guild',
@@ -372,15 +406,16 @@ export default class EventLogger {
             {
                 targetName: inviteCode
             }
-        )
+        ))
     }
 
     async userUpdatedLog(guild: Guild, oldUser: User, newUser: User) {
-        const changes = compareUserChanges(oldUser, newUser)
+        if (!newUser || !oldUser) return null
 
+        const changes = compareUserChanges(oldUser, newUser)
         if (!changes) return null
 
-        return this.createLogEntry(
+        return this.tryFetch(() => this.createLogEntry(
             guild,
             this.LOGS[13] as EventActions,
             'user',
@@ -389,11 +424,11 @@ export default class EventLogger {
                 targetUser: { username: newUser.username, id: newUser.id },
                 content: changes
             }
-        )
+        ))
     }
 
     async memberJoinedLog(guild: Guild, username: string, userId: string) {
-        return this.createLogEntry(
+        return this.tryFetch(() => this.createLogEntry(
             guild,
             this.LOGS[14] as EventActions,
             'user',
@@ -401,11 +436,11 @@ export default class EventLogger {
             {
                 targetUser: { username, id: userId }
             }
-        )
+        ))
     }
 
     async memberLeftLog(guild: Guild, username: string, userId: string) {
-        return this.createLogEntry(
+        return this.tryFetch(() => this.createLogEntry(
             guild,
             this.LOGS[15] as EventActions,
             'user',
@@ -413,15 +448,16 @@ export default class EventLogger {
             {
                 targetUser: { username, id: userId }
             }
-        )
+        ))
     }
 
     async memberUpdatedLog(oldMember: GuildMember, newMember: GuildMember) {
-        const changes = compareMemberChanges(oldMember, newMember)
+        if (!newMember.user) return null
 
+        const changes = compareMemberChanges(oldMember, newMember)
         if (!changes) return null
 
-        return this.createLogEntry(
+        return this.tryFetch(() => this.createLogEntry(
             newMember.guild,
             this.LOGS[16] as EventActions,
             'user',
@@ -430,6 +466,6 @@ export default class EventLogger {
                 targetUser: { username: newMember.user.username, id: newMember.user.id },
                 content: changes
             }
-        )
+        ))
     }
 }

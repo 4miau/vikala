@@ -36,7 +36,7 @@ export const Colors = {
     'AeonBrown': '#a16a6a' as ColorResolvable,
     'SlateGray': '#708090' as ColorResolvable,
     'Blurple': '#5865f2' as ColorResolvable,
-    'BlueViolet': '0x7c3aed' as ColorResolvable,
+    'BlueViolet': '#7c3aed' as ColorResolvable,
     'Active': '#57f287' as ColorResolvable,
     'HighlightYellow': '#fee75c' as ColorResolvable,
     'Fuchsia': '#eb459e' as ColorResolvable,

@@ -10,7 +10,7 @@ export class EventListener extends Listener {
 
     public override async run(reaction: MessageReaction, user: User) {
         if (reaction.partial) {
-            try { await reaction.fetch() }
+            try { reaction = await reaction.fetch() }
             catch { return }
         }
 

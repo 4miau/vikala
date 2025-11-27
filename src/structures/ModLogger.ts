@@ -38,6 +38,36 @@ export default class ModLogger {
         return Case.findOne({ guildId: guild.id, caseId: caseId }) as Promise<ICase>
     }
 
+    async getLatestCases(guild: Guild, limit: number = 10): Promise<ICase[]> {
+        return Case.find({ guildId: guild.id })
+            .sort({ caseId: -1 })
+            .limit(limit) as Promise<ICase[]>
+    }
+
+    async getCasesByUser(guild: Guild, userId: string, limit: number = 15): Promise<ICase[]> {
+        return Case.find({ guildId: guild.id, targetId: userId })
+            .sort({ caseId: -1 })
+            .limit(limit) as Promise<ICase[]>
+    }
+
+    formatCase(caseData: ICase): string {
+        const emoji = this.getEmoji(caseData.action as ModActions)
+        const action = this.getPhrase(caseData.action as ModActions)
+        const reason = caseData.extras?.reason || 'No reason provided'
+
+        let logMessage = `\`[Case ${caseData.caseId}]\` ${emoji} **${caseData.targetUsername}** was ${action}`
+
+        if (caseData.modUsername) {
+            logMessage += ` by **${caseData.modUsername}**`
+        }
+
+        if (reason && reason !== 'No reason provided') {
+            logMessage += ` - ${reason}`
+        }
+
+        return logMessage
+    }
+
     async createCase(guild: Guild, data: Partial<CaseData>) {
         if (!data.action || !data.message || !data.target) return false
 

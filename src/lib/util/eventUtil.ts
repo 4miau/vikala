@@ -130,7 +130,7 @@ export function compareChannelChanges(oldChannel: GuildChannel, newChannel: Guil
     }
 
     if (changes.length === 0) {
-        return null // No significant changes detected
+        return null
     }
 
     return `**📝 Changes:**\n${changes.join('\n')}`
@@ -142,7 +142,7 @@ export function compareMemberChanges(oldMember: import('discord.js').GuildMember
     if (oldMember.nickname !== newMember.nickname) {
         const oldNick = oldMember.nickname || oldMember.user.username
         const newNick = newMember.nickname || newMember.user.username
-        changes.push(`• **Nickname:** \`${oldNick}\` → \`${newNick}\``)
+        changes.push(`**Nickname:** \`${oldNick}\` → \`${newNick}\``)
     }
 
     if (changes.length === 0) return null
@@ -154,13 +154,13 @@ export function compareUserChanges(oldUser: import('discord.js').User, newUser: 
     const changes: string[] = []
 
     if (oldUser.username !== newUser.username) {
-        changes.push(`• **Username:** \`${oldUser.username}\` → \`${newUser.username}\``)
+        changes.push(`**Username:** \`${oldUser.username}\` → \`${newUser.username}\``)
     }
 
     if (oldUser.avatar !== newUser.avatar) {
         const oldAvatar = oldUser.avatar ? `[Avatar](${oldUser.displayAvatarURL()})` : 'No Avatar'
         const newAvatar = newUser.avatar ? `[Avatar](${newUser.displayAvatarURL()})` : 'No Avatar'
-        changes.push(`• **Avatar:** ${oldAvatar} → ${newAvatar}`)
+        changes.push(`**Avatar:** ${oldAvatar} → ${newAvatar}`)
     }
 
     if (changes.length === 0) return null
