@@ -2,6 +2,7 @@ import mongoose from 'mongoose'
 
 declare type EventExtrasType = {
     channelId?: string
+    channelName?: string
     content?: string
     beforeContent?: string
     afterContent?: string

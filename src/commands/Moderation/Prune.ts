@@ -1,7 +1,7 @@
 import { Args } from '@sapphire/framework'
 import { ApplyOptions } from '@sapphire/decorators'
 import { Subcommand } from '@sapphire/plugin-subcommands'
-import { Collection, Message } from 'discord.js'
+import { Collection, Message, TextChannel } from 'discord.js'
 import * as emoji from 'node-emoji'
 
 @ApplyOptions<Subcommand.Options>({
@@ -242,7 +242,8 @@ export class Prune extends Subcommand {
     private async executeMessagePrune(messages: Collection<string, Message>, filterFn?: (m: Message) => boolean) {
         const unpinnedMessages = messages.filter((m: any) => !m.pinned)
         const filtered = filterFn ? unpinnedMessages.filter(filterFn) : unpinnedMessages
-        filtered.forEach((m) => m?.delete().catch(() => null))
+
+        for (const m of filtered.values()) { await m?.delete() }
         return filtered.size
     }
 
