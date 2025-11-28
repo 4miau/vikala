@@ -6,6 +6,7 @@ import { Message } from 'discord.js'
 import Vikala from '../client/vikala'
 import creds from '../keys/tien-476418-7db3e64f7a21.json'
 import { googleScopes } from '../lib/util/constants'
+import { envs } from '../lib/util/environmentVariables'
 
 
 export default class Sheets {
@@ -23,7 +24,7 @@ export default class Sheets {
     public async _init() {
         this.jwt = new JWT({ key: creds.private_key, email: creds.client_email, scopes: googleScopes })
 
-        this.doc = new GoogleSpreadsheet('1s0KxBSVMbH1ot-hUBQQbQGhogXf9hON6fQr6IDbrOgM', this.jwt)
+        this.doc = new GoogleSpreadsheet(envs.VHS_SHEET_ID, this.jwt)
         await this.doc.loadInfo(true)
 
         this.vhsSheet = this.doc.sheetsByTitle['GAMES LIBRARY']
@@ -91,7 +92,6 @@ export default class Sheets {
 
         const updates = [
             { row: sheetIndex, col: 0, formula: `=HYPERLINK("${gameLink}", "${game.title}")` },
-            { row: sheetIndex, col: 1, value: game.links.self },
             { row: sheetIndex, col: 8, value: `From itch.io, price: ${game.price}` }
         ]
 
