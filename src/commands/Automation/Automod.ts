@@ -155,7 +155,7 @@ export class AutomodCommand extends Subcommand {
             return message.channel.send('✅ Automod will now automatically find the mute role.')
         }
 
-        const role = await args.pick('role').catch(() => null)
+        const role = await args.pickResult('role').then(res => res.isOk() ? res.unwrap() : null)
         if (!role) {
             return message.channel.send('❌ Invalid role provided.')
         }

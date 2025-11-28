@@ -19,7 +19,7 @@ export interface IAutomodRule extends mongoose.Document {
     punishment: 'warn' | 'mute' | 'kick' | 'ban' | 'temp_mute' | 'temp_ban'
     duration?: number
     warningsBeforeAction?: number
-    whitelist?: string[]
+    blacklist?: string[]
     createdAt: Date
     updatedAt: Date
 }
@@ -93,7 +93,7 @@ const automodRuleSchema = new Schema({
         type: Number,
         default: 3
     },
-    whitelist: [{
+    blacklist: [{
         type: String
     }],
     createdAt: {

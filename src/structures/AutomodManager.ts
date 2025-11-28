@@ -289,10 +289,10 @@ export default class AutomodManager {
 
 
     private checkBadWords(message: Message, rule: IAutomodRule): AutomodViolation | null {
-        if (!message.content || !rule.whitelist || rule.whitelist.length === 0) return null
+        if (!message.content || !rule.blacklist || rule.blacklist.length === 0) return null
 
         const content = message.content.toLowerCase()
-        const foundWord = rule.whitelist.find(word => content.includes(word.toLowerCase()))
+        const foundWord = rule.blacklist.find(word => content.includes(word.toLowerCase()))
 
         if (foundWord) {
             return {

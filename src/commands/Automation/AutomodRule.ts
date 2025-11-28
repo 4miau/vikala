@@ -6,6 +6,7 @@ import ms from 'ms'
 
 import { Colors } from '../../lib/util/Colors'
 import { AutomodRule, IAutomodRule } from '../../database/AutomodConfig'
+import { arrayEmpty } from 'miau-utilities'
 
 @ApplyOptions<Subcommand.Options>({
     name: 'automodrule',
@@ -19,13 +20,17 @@ import { AutomodRule, IAutomodRule } from '../../database/AutomodConfig'
         { example: 'rule set caps threshold 70', description: 'Set caps threshold to 70%.' },
         { example: 'rule set spam warnings 3', description: 'Require 3 warnings before punishment.' },
         { example: 'rule set spam duration 1h', description: 'Set temp mute duration to 1 hour.' },
-        { example: 'rule info spam', description: 'View detailed info about spam rule.' }
+        { example: 'rule info spam', description: 'View detailed info about spam rule.' },
+        { example: 'rule blacklist add bad_words word1 word2', description: 'Add words to bad words blacklist.' },
+        { example: 'rule blacklist remove bad_words word1', description: 'Remove word from blacklist.' },
+        { example: 'rule blacklist list bad_words', description: 'List all blacklisted words.' }
     ],
     requiredUserPermissions: ['ManageGuild'],
     subcommands: [
         { name: 'enable', chatInputRun: 'chatInputEnable', messageRun: 'messageEnable' },
         { name: 'disable', chatInputRun: 'chatInputDisable', messageRun: 'messageDisable' },
         { name: 'set', chatInputRun: 'chatInputSet', messageRun: 'messageSet' },
+        { name: 'blacklist', chatInputRun: 'chatInputBlacklist', messageRun: 'messageBlacklist' },
         { name: 'info', chatInputRun: 'chatInputInfo', messageRun: 'messageInfo', default: true }
     ]
 })
@@ -219,6 +224,96 @@ export class AutomodRuleCommand extends Subcommand {
         return interaction.reply({ embeds: [embed] })
     }
 
+    public async messageBlacklist(message: Message, args: Args) {
+        if (!message.channel.isSendable()) return
+
+        const action = await args.pickResult('string').then(res => res.isOk() ? res.unwrap().toLowerCase() : null)
+        if (!action) return message.channel.send('❌ Usage: `rule blacklist <add|remove|list> <rule_type> [words...]`')
+
+        if (!['add', 'remove', 'list'].includes(action)) {
+            return message.channel.send('❌ Invalid action. Use: add, remove, or list')
+        }
+
+        const ruleType = await args.pickResult('string')
+        if (!ruleType.ok) {
+            return message.channel.send('❌ Please specify a rule type (currently only bad_words supported)')
+        }
+
+        const type = ruleType.unwrap().toLowerCase()
+        if (type !== 'bad_words') return message.channel.send('❌ Blacklist management is only available for bad_words rule')
+
+        const rule = await AutomodRule.findOne({ guildId: message.guild.id, type })
+        if (!rule) return message.channel.send('❌ Rule not found.')
+
+        if (action === 'list') {
+            if (!rule.blacklist || rule.blacklist.length === 0) return message.channel.send('📝 No words in blacklist.')
+            return message.channel.send(`📝 **Blacklisted Words:**\n${rule.blacklist.map(w => `\`${w}\``).join(', ')}`)
+        }
+
+        const words = await args.repeatResult('string').then(res => res.isOk() ? res.unwrap() : [])
+        if (arrayEmpty(words)) return message.channel.send('❌ Please provide at least one word to add/remove')
+
+        if (!rule.blacklist) rule.blacklist = []
+
+        if (action === 'add') {
+            const newWords = words.filter(w => !rule.blacklist!.includes(w.toLowerCase()))
+            rule.blacklist.push(...newWords.map(w => w.toLowerCase()))
+            await rule.save()
+            return message.channel.send(`✅ Added **${newWords.length}** word(s) to blacklist`)
+        }
+
+        if (action === 'remove') {
+            const removed = words.filter(w => rule.blacklist!.includes(w.toLowerCase()))
+            rule.blacklist = rule.blacklist.filter(w => !words.map(w => w.toLowerCase()).includes(w))
+            await rule.save()
+            return message.channel.send(`✅ Removed **${removed.length}** word(s) from blacklist`)
+        }
+    }
+
+    public async chatInputBlacklist(interaction: Subcommand.ChatInputCommandInteraction) {
+        if (!interaction.guild) return
+
+        const action = interaction.options.getString('action', true)
+        const type = interaction.options.getString('type', true)
+
+        if (type !== 'bad_words') {
+            return interaction.reply({ content: '❌ Blacklist management is only available for bad_words rule', flags: ['Ephemeral'] })
+        }
+
+        const rule = await AutomodRule.findOne({ guildId: interaction.guild.id, type })
+        if (!rule) {
+            return interaction.reply({ content: '❌ Rule not found.', flags: ['Ephemeral'] })
+        }
+
+        if (action === 'list') {
+            if (!rule.blacklist || rule.blacklist.length === 0) {
+                return interaction.reply({ content: '📝 No words in blacklist.', flags: ['Ephemeral'] })
+            }
+            return interaction.reply({ content: `📝 **Blacklisted Words:**\n${rule.blacklist.map(w => `\`${w}\``).join(', ')}`, flags: ['Ephemeral'] })
+        }
+
+        const words = interaction.options.getString('words', true).split(/\s+/).filter(w => w.length > 0)
+        if (words.length === 0) {
+            return interaction.reply({ content: '❌ Please provide at least one word', flags: ['Ephemeral'] })
+        }
+
+        if (!rule.blacklist) rule.blacklist = []
+
+        if (action === 'add') {
+            const newWords = words.filter(w => !rule.blacklist!.includes(w.toLowerCase()))
+            rule.blacklist.push(...newWords.map(w => w.toLowerCase()))
+            await rule.save()
+            return interaction.reply({ content: `✅ Added **${newWords.length}** word(s) to blacklist`, flags: ['Ephemeral'] })
+        }
+
+        if (action === 'remove') {
+            const removed = words.filter(w => rule.blacklist!.includes(w.toLowerCase()))
+            rule.blacklist = rule.blacklist.filter(w => !words.map(w => w.toLowerCase()).includes(w))
+            await rule.save()
+            return interaction.reply({ content: `✅ Removed **${removed.length}** word(s) from blacklist`, flags: ['Ephemeral'] })
+        }
+    }
+
     private async updateRuleProperty(rule: IAutomodRule, property: string, value: string): Promise<{ success: boolean; message?: string; error?: string }> {
         switch (property) {
             case 'punishment':
@@ -280,6 +375,10 @@ export class AutomodRuleCommand extends Subcommand {
 
         if (rule.duration) {
             info += `**Duration:** ${ms(rule.duration, { long: true })}\n`
+        }
+
+        if (rule.blacklist && rule.blacklist.length > 0) {
+            info += `**Blacklisted Words:** ${rule.blacklist.length} word(s)\n`
         }
 
         info += `\n**Description:**\n${this.getRuleDescription(rule.type)}`
@@ -377,6 +476,33 @@ export class AutomodRuleCommand extends Subcommand {
                             opt.setName('value')
                                 .setDescription('The value to set (e.g., "mute", "70", "3", "1h")')
                                 .setRequired(true)
+                        )
+                )
+                .addSubcommand((sub) =>
+                    sub.setName('blacklist')
+                        .setDescription('Manage bad words blacklist')
+                        .addStringOption((opt) =>
+                            opt.setName('action')
+                                .setDescription('Action to perform')
+                                .setRequired(true)
+                                .addChoices(
+                                    { name: 'Add', value: 'add' },
+                                    { name: 'Remove', value: 'remove' },
+                                    { name: 'List', value: 'list' }
+                                )
+                        )
+                        .addStringOption((opt) =>
+                            opt.setName('type')
+                                .setDescription('Rule type (only bad_words supported)')
+                                .setRequired(true)
+                                .addChoices(
+                                    { name: 'Bad Words', value: 'bad_words' }
+                                )
+                        )
+                        .addStringOption((opt) =>
+                            opt.setName('words')
+                                .setDescription('Space-separated words to add/remove (not needed for list)')
+                                .setRequired(false)
                         )
                 )
                 .addSubcommand((sub) =>
