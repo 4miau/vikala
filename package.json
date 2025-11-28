@@ -14,6 +14,7 @@
     "@sapphire/plugin-subcommands": "^7.0.1",
     "@sapphire/utilities": "^3.18.2",
     "axios": "^1.13.2",
+    "cheerio": "^1.1.2",
     "discord.js": "^14.25.0",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
@@ -33,6 +34,7 @@
     "start": "node ./dist/bot.js"
   },
   "devDependencies": {
+    "@types/cheerio": "^0.22.35",
     "@types/express": "^5.0.4",
     "@types/ms": "^2.1.0",
     "@types/node-emoji": "^1.8.2"

@@ -2,11 +2,11 @@ import { GoogleSpreadsheet, GoogleSpreadsheetWorksheet } from 'google-spreadshee
 import { JWT } from 'google-auth-library'
 import { Message } from 'discord.js'
 
-
 import Vikala from '../client/vikala'
 import creds from '../keys/tien-476418-7db3e64f7a21.json'
 import { googleScopes } from '../lib/util/constants'
 import { envs } from '../lib/util/environmentVariables'
+import { fetchItchioDescription } from '../lib/util/utilities'
 
 
 export default class Sheets {
@@ -89,9 +89,11 @@ export default class Sheets {
 
     private async addItchEntry(gameLink: string, sheetIndex: number) {
         const game: ItchioGame = await this.client.tasks.get('getitchiogame').exec(gameLink)
+        const description = await fetchItchioDescription(gameLink)
 
         const updates = [
             { row: sheetIndex, col: 0, formula: `=HYPERLINK("${gameLink}", "${game.title}")` },
+            { row: sheetIndex, col: 1, value: description },
             { row: sheetIndex, col: 8, value: `From itch.io, price: ${game.price}` }
         ]
 

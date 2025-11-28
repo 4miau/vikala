@@ -1,5 +1,6 @@
 import { Message, SendableChannels } from 'discord.js'
 import ms from 'ms'
+import * as cheerio from 'cheerio'
 
 export function yes(content: string) {
     if (content && (/^y(?:e(?:a|s)?)?$/i).test(content.trim())) return true
@@ -34,4 +35,25 @@ export async function getInput(chnl: SendableChannels, options: Options): Promis
 export async function timerMessage(m: Message, delay: number = ms('5s')) {
     return new Promise(resolve => setTimeout(resolve, delay))
         .then(() => m?.delete() )
+}
+
+export async function fetchItchioDescription(data: string): Promise<string> {
+    try {
+        const $ = cheerio.load(data)
+
+        const description =
+            $('meta[name="description"]').attr('content') ||
+            $('meta[property="og:description"]').attr('content') ||
+            $('meta[name="twitter:description"]').attr('content') ||
+            $('.game_description').first().text().trim() ||
+            $('.formatted_description').first().text().trim() ||
+            $('.game_frame .game_info_panel_widget p').first().text().trim() ||
+            $('.itch_game_content p').first().text().trim() ||
+            'Indie game available on itch.io'
+
+        const cleaned = description.replace(/\s+/g, ' ').trim()
+        return cleaned.length > 200 ? cleaned.substring(0, 197) + '...' : cleaned
+    } catch {
+        return 'Indie game available on itch.io'
+    }
 }
