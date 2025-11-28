@@ -7,7 +7,6 @@ export interface IAutomodConfig extends mongoose.Document {
     whitelistedChannels: string[]
     whitelistedRoles: string[]
     autoFindMuteRole: boolean
-    logChannelId?: string
     createdAt: Date
     updatedAt: Date
 }
@@ -50,10 +49,6 @@ const automodConfigSchema = new Schema({
     autoFindMuteRole: {
         type: Boolean,
         default: true
-    },
-    logChannelId: {
-        type: String,
-        default: null
     },
     createdAt: {
         type: Date,

@@ -1,4 +1,5 @@
 import { ActivityType, PresenceData } from 'discord.js'
+import { arrayEmpty } from 'miau-utilities'
 import ms from 'ms'
 
 import Vikala from '../client/vikala'
@@ -124,7 +125,7 @@ export default class PresenceManager {
         if (!this.client.user) return
 
         const presences = this.getPresences()
-        if (presences.length === 0) return
+        if (arrayEmpty(presences)) return
 
         const presence = presences[this.currentIndex]
         const activity: any = { name: presence.name, type: presence.type }
