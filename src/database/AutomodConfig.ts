@@ -7,7 +7,6 @@ export interface IAutomodConfig extends mongoose.Document {
     whitelistedChannels: string[]
     whitelistedRoles: string[]
     autoFindMuteRole: boolean
-    logChannelId?: string
     createdAt: Date
     updatedAt: Date
 }
@@ -20,7 +19,7 @@ export interface IAutomodRule extends mongoose.Document {
     punishment: 'warn' | 'mute' | 'kick' | 'ban' | 'temp_mute' | 'temp_ban'
     duration?: number
     warningsBeforeAction?: number
-    whitelist?: string[]
+    blacklist?: string[]
     createdAt: Date
     updatedAt: Date
 }
@@ -50,10 +49,6 @@ const automodConfigSchema = new Schema({
     autoFindMuteRole: {
         type: Boolean,
         default: true
-    },
-    logChannelId: {
-        type: String,
-        default: null
     },
     createdAt: {
         type: Date,
@@ -98,7 +93,7 @@ const automodRuleSchema = new Schema({
         type: Number,
         default: 3
     },
-    whitelist: [{
+    blacklist: [{
         type: String
     }],
     createdAt: {

@@ -2,6 +2,7 @@ import { GuildMember, Message, PermissionsBitField, Role } from 'discord.js'
 import ms from 'ms'
 import { AutomodConfig, AutomodRule, IAutomodConfig, IAutomodRule } from '../database/AutomodConfig'
 import Vikala from '../client/vikala'
+import { AUTOMOD_REGEX } from '../lib/util/constants'
 
 interface AutomodViolation {
     type: string
@@ -15,6 +16,8 @@ export default class AutomodManager {
     private configCache = new Map<string, IAutomodConfig>()
     private rulesCache = new Map<string, IAutomodRule[]>()
     private userWarnings = new Map<string, Map<string, number>>()
+    private messageTracker = new Map<string, { messages: number; timestamp: number }>()
+    private attachmentTracker = new Map<string, { count: number; timestamp: number }>()
 
     constructor(client: Vikala) {
         this.client = client
@@ -89,7 +92,7 @@ export default class AutomodManager {
             case 'spam':
                 return this.checkSpam(message, rule)
             case 'invites':
-                return this.checkInvites(message, rule)
+                return await this.checkInvites(message, rule)
             case 'attachment_spam':
                 return this.checkAttachmentSpam(message, rule)
             default:
@@ -192,7 +195,6 @@ export default class AutomodManager {
                             }
                         })
 
-
                         setTimeout(async () => {
                             try {
                                 await member.guild.members.unban(member.id, 'Temporary ban expired')
@@ -288,26 +290,133 @@ export default class AutomodManager {
 
 
     private checkBadWords(message: Message, rule: IAutomodRule): AutomodViolation | null {
+        if (!message.content || !rule.blacklist || rule.blacklist.length === 0) return null
+
+        const content = message.content.toLowerCase()
+        const foundWord = rule.blacklist.find(word => content.includes(word.toLowerCase()))
+
+        if (foundWord) {
+            return {
+                type: 'bad_words',
+                reason: `Used prohibited word: ${foundWord}`,
+                severity: 'high',
+                content: message.content
+            }
+        }
 
         return null
     }
 
     private checkCaps(message: Message, rule: IAutomodRule): AutomodViolation | null {
+        if (!message.content || message.content.length < 10) return null
+
+        const threshold = rule.threshold || 70
+        const letters = message.content.replace(AUTOMOD_REGEX.NON_LETTERS, '')
+        if (letters.length < 5) return null
+
+        const upperCount = (message.content.match(/[A-Z]/g) || []).length
+        const capsPercentage = (upperCount / letters.length) * 100
+
+        if (capsPercentage >= threshold) {
+            return {
+                type: 'caps',
+                reason: `Excessive caps: ${Math.round(capsPercentage)}% (limit: ${threshold}%)`,
+                severity: 'medium',
+                content: message.content
+            }
+        }
 
         return null
     }
 
     private checkSpam(message: Message, rule: IAutomodRule): AutomodViolation | null {
+        const threshold = rule.threshold || 5
+        const timeWindow = ms('5s')
+        const key = `${message.guild!.id}-${message.author.id}`
+
+        const now = Date.now()
+        const tracker = this.messageTracker.get(key)
+
+        if (!tracker || now - tracker.timestamp > timeWindow) {
+            this.messageTracker.set(key, { messages: 1, timestamp: now })
+            return null
+        }
+
+        tracker.messages++
+
+        if (tracker.messages >= threshold) {
+            this.messageTracker.delete(key)
+            return {
+                type: 'spam',
+                reason: `Sent ${tracker.messages} messages in ${ms(timeWindow)}`,
+                severity: 'high'
+            }
+        }
 
         return null
     }
 
-    private checkInvites(message: Message, rule: IAutomodRule): AutomodViolation | null {
+    private async checkInvites(message: Message, rule: IAutomodRule): Promise<AutomodViolation | null> {
+        if (!message.content) return null
+
+        const matches = message.content.match(AUTOMOD_REGEX.DISCORD_INVITE)
+
+        if (matches && matches.length > 0) {
+            for (const match of matches) {
+                const codeMatch = match.match(/([a-zA-Z0-9]+)$/)
+                if (!codeMatch) continue
+
+                const inviteCode = codeMatch[1]
+
+                try {
+                    const invite = await this.client.fetchInvite(inviteCode)
+                    if (invite.guild?.id === message.guild!.id) continue
+
+                    return {
+                        type: 'invites',
+                        reason: 'Posted external Discord invite link',
+                        severity: 'medium',
+                        content: match
+                    }
+                } catch {
+                    return {
+                        type: 'invites',
+                        reason: 'Posted Discord invite link',
+                        severity: 'medium',
+                        content: match
+                    }
+                }
+            }
+        }
 
         return null
     }
 
     private checkAttachmentSpam(message: Message, rule: IAutomodRule): AutomodViolation | null {
+        if (message.attachments.size === 0) return null
+
+        const threshold = rule.threshold || 3
+        const timeWindow = ms('10s')
+        const key = `${message.guild!.id}-${message.author.id}`
+
+        const now = Date.now()
+        const tracker = this.attachmentTracker.get(key)
+
+        if (!tracker || now - tracker.timestamp > timeWindow) {
+            this.attachmentTracker.set(key, { count: message.attachments.size, timestamp: now })
+            return null
+        }
+
+        tracker.count += message.attachments.size
+
+        if (tracker.count >= threshold) {
+            this.attachmentTracker.delete(key)
+            return {
+                type: 'attachment_spam',
+                reason: `Sent ${tracker.count} attachments in ${ms(timeWindow)}`,
+                severity: 'medium'
+            }
+        }
 
         return null
     }
@@ -319,6 +428,14 @@ export default class AutomodManager {
 
             for (const [guildId, guildWarnings] of this.userWarnings) {
                 if (guildWarnings.size === 0) this.userWarnings.delete(guildId)
+            }
+
+            const now = Date.now()
+            for (const [key, data] of Array.from(this.messageTracker)) {
+                if (now - data.timestamp > ms('1m')) this.messageTracker.delete(key)
+            }
+            for (const [key, data] of Array.from(this.attachmentTracker)) {
+                if (now - data.timestamp > ms('1m')) this.attachmentTracker.delete(key)
             }
         }, ms('5m'))
     }
@@ -344,7 +461,5 @@ export default class AutomodManager {
                 enabled: false
             })
         }
-
-        this.client.logger.info(`Initialized automod for guild ${guildId}`)
     }
 }
