@@ -16,6 +16,7 @@ export default class RawgGameById extends Task {
             params: { key: envs.RAWG_API_KEY }
         }
 
-        return await this.client.api.set(obj).call()
+        return await this.client.api.set(obj)
+            .call()
     }
 }

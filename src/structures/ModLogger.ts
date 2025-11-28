@@ -57,13 +57,8 @@ export default class ModLogger {
 
         let logMessage = `\`[Case ${caseData.caseId}]\` ${emoji} **${caseData.targetUsername}** was ${action}`
 
-        if (caseData.modUsername) {
-            logMessage += ` by **${caseData.modUsername}**`
-        }
-
-        if (reason && reason !== 'No reason provided') {
-            logMessage += ` - ${reason}`
-        }
+        if (caseData.modUsername) logMessage += ` by **${caseData.modUsername}**`
+        if (reason && reason !== 'No reason provided') logMessage += ` - ${reason}`
 
         return logMessage
     }

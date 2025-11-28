@@ -241,9 +241,12 @@ export default class LevelingManager {
         if (!member) return 1
 
         let multiplier = 1
-        for (const [roleId, roleMultiplier] of Object.entries(config.multiplierRoles)) {
-            if (member.roles.cache.has(roleId)) {
-                multiplier = Math.max(multiplier, roleMultiplier)
+
+        if (config.multiplierRoles && typeof config.multiplierRoles === 'object') {
+            for (const [roleId, roleMultiplier] of Object.entries(config.multiplierRoles)) {
+                if (member.roles.cache.has(roleId)) {
+                    multiplier = Math.max(multiplier, roleMultiplier)
+                }
             }
         }
 

@@ -22,6 +22,8 @@ export default class GGDeals extends Task {
             }
         }
 
-        return this.client.api.set(obj).call().then((res) => res.data[gameId])
+        return this.client.api.set(obj)
+            .call()
+            .then((res) => res.data[gameId])
     }
 }

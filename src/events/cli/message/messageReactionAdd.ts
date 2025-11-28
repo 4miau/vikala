@@ -15,6 +15,7 @@ export class EventListener extends Listener {
         }
 
         if (!reaction.message.guild) return
-        await this.client.reactionRoles.handleReactionAdd(reaction, user)
+
+        await this.client.roleGroups.handleReactionAdd(reaction, user)
     }
 }

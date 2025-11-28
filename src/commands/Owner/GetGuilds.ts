@@ -15,7 +15,7 @@ import type { Message } from 'discord.js'
 export class GetGuilds extends Command {
     client = this.container.client
 
-    public async messageRun(message: Message, args: Args) {
+    public async messageRun(message: Message) {
         if (!message.channel.isSendable()) return
 
         const guilds = this.client.guilds.cache.map((g) => `${g.name} | ${g.id}`).join('\n')

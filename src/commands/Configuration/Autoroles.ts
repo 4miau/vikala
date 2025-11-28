@@ -35,7 +35,7 @@ export class AutorolesCommand extends Subcommand {
     private client = this.container.client
 
     public async messageList(message: Message) {
-        if (!message.guild || !message.channel.isSendable()) return
+        if (!message.channel.isSendable()) return
 
 
         const rules = await this.client.autoroles.getRules(message.guild.id)
@@ -70,8 +70,6 @@ export class AutorolesCommand extends Subcommand {
     }
 
     public async chatInputList(interaction: Subcommand.ChatInputCommandInteraction) {
-        if (!interaction.guild) return
-
         const rules = await this.client.autoroles.getRules(interaction.guild.id)
 
         if (rules.length === 0) return interaction.reply({ content: '❌ No autorole rules configured for this server.', flags: ['Ephemeral'] })
@@ -100,16 +98,14 @@ export class AutorolesCommand extends Subcommand {
     }
 
     public async messageAdd(message: Message, args: Args) {
-        if (!message.guild || !message.channel.isSendable()) return
+        if (!message.channel.isSendable()) return
 
         const type = await args.pickResult('string').then(res => res.isOk() ? res.unwrap() : null)
         const role = await args.pickResult('role').then(res => res.isOk() ? res.unwrap() : null)
 
         if (!type || !['join', 'time', 'boost'].includes(type.toLowerCase())) return message.channel.send('❌ Please specify a valid type: `join`, `time`, or `boost`\nExample: `autoroles add join @Member`')
-
         if (!role) return message.channel.send('❌ Please mention a valid role.\nExample: `autoroles add join @Member`')
 
-        // Parse delay if provided
         let delay = 0
         const delayArg = await args.pickResult('string').then(res => res.isOk() ? res.unwrap() : null)
         if (delayArg) {
@@ -131,8 +127,6 @@ export class AutorolesCommand extends Subcommand {
     }
 
     public async chatInputAdd(interaction: Subcommand.ChatInputCommandInteraction) {
-        if (!interaction.guild) return
-
         const type = interaction.options.getString('type', true) as 'join' | 'time' | 'boost'
         const role = interaction.options.getRole('role', true) as Role
         const delay = interaction.options.getString('delay') || '0'
@@ -159,7 +153,7 @@ export class AutorolesCommand extends Subcommand {
     }
 
     public async messageRemove(message: Message, args: Args) {
-        if (!message.guild || !message.channel.isSendable()) return
+        if (!message.channel.isSendable()) return
 
         const role = await args.pickResult('role').then(res => res.isOk() ? res.unwrap() : null)
         if (!role) return message.channel.send('❌ Please mention a valid role.\nExample: `autoroles remove @Member`')
@@ -171,8 +165,6 @@ export class AutorolesCommand extends Subcommand {
     }
 
     public async chatInputRemove(interaction: Subcommand.ChatInputCommandInteraction) {
-        if (!interaction.guild) return
-
         const role = interaction.options.getRole('role', true)
         const removed = await this.client.autoroles.removeRule(interaction.guild.id, role.id)
 
@@ -181,7 +173,7 @@ export class AutorolesCommand extends Subcommand {
     }
 
     public async messageToggle(message: Message, args: Args) {
-        if (!message.guild || !message.channel.isSendable()) return
+        if (!message.channel.isSendable()) return
 
         const role = await args.pickResult('role').then(res => res.isOk() ? res.unwrap() : null)
         const enabled = await args.pickResult('boolean').then(res => res.isOk() ? res.unwrap() : null)
@@ -191,7 +183,6 @@ export class AutorolesCommand extends Subcommand {
 
 
         const updated = await this.client.autoroles.toggleRule(message.guild.id, role.id, enabled)
-
         const status = enabled ? 'enabled' : 'disabled'
 
         if (updated) return message.channel.send(`✅ ${status.charAt(0).toUpperCase() + status.slice(1)} autorole rule for ${role}`)
@@ -199,8 +190,6 @@ export class AutorolesCommand extends Subcommand {
     }
 
     public async chatInputToggle(interaction: Subcommand.ChatInputCommandInteraction) {
-        if (!interaction.guild) return
-
         const role = interaction.options.getRole('role', true) as Role
         const enabled = interaction.options.getBoolean('enabled', true)
         const updated = await this.client.autoroles.toggleRule(interaction.guild.id, role.id, enabled)
@@ -212,7 +201,7 @@ export class AutorolesCommand extends Subcommand {
     }
 
     public async messagePriority(message: Message, args: Args) {
-        if (!message.guild || !message.channel.isSendable()) return
+        if (!message.channel.isSendable()) return
 
         const role = await args.pickResult('role').then(res => res.isOk() ? res.unwrap() : null)
         const priority = await args.pickResult('number').then(res => res.isOk() ? res.unwrap() : null)
@@ -227,8 +216,6 @@ export class AutorolesCommand extends Subcommand {
     }
 
     public async chatInputPriority(interaction: Subcommand.ChatInputCommandInteraction) {
-        if (!interaction.guild) return
-
         const role = interaction.options.getRole('role', true) as Role
         const priority = interaction.options.getInteger('priority', true)
         const updated = await this.client.autoroles.updateRulePriority(interaction.guild.id, role.id, priority)

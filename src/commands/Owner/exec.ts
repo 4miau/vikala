@@ -15,7 +15,7 @@ export class Exec extends Command {
     public async messageRun(message: Message, args: Args) {
         if (!message.channel.isSendable()) return
 
-        const command = await args.restResult('string').then(r => r.ok ? r.unwrap() : null)
+        const command = await args.restResult('string').then(res => res.isOk() ? res.unwrap() : null)
         if (!command) return message.channel.send('Please provide a command to execute.')
 
         const startTime = Date.now()

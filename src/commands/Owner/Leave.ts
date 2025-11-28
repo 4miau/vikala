@@ -13,8 +13,7 @@ import type { Message } from 'discord.js'
 export class Leave extends Command {
     client = this.container.client
 
-    public async messageRun(message: Message, args: Args) {
-        if (!message.channel.isSendable()) return
+    public async messageRun(message: Message) {
         await message.guild.leave()
     }
 

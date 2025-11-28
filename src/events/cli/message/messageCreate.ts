@@ -1,13 +1,17 @@
 import { ApplyOptions } from '@sapphire/decorators'
-import { Events, Listener } from '@sapphire/framework'
+import { Listener, Events } from '@sapphire/framework'
 import { Message } from 'discord.js'
 
-ApplyOptions<Listener.Options>({ event: Events.MessageCreate })
+@ApplyOptions<Listener.Options>({ event: Events.MessageCreate })
 export class EventListener extends Listener {
-    client = this.container.client
+    private client = this.container.client
 
-    public override run(message: Message) {
-        this.client.sheets.handleIsVHS(message)
-        this.client.leveling.handleMessageXP(message.member, message.channel)
+    public override async run(message: Message) {
+        await this.client.automod.processMessage(message)
+        try {
+            this.client.sheets.handleIsVHS(message)
+            this.client.leveling.handleMessageXP(message.member, message.channel)
+        } catch {
+        }
     }
 }

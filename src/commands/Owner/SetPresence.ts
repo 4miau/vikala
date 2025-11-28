@@ -5,6 +5,7 @@ import { ActivityType, EmbedBuilder, Message } from 'discord.js'
 import ms from 'ms'
 
 import { ActivityStatus } from '../../typings/@definitions/Arguments'
+import { Colors } from '../../lib/util/Colors'
 
 @ApplyOptions<Subcommand.Options>({
     name: 'setpresence',
@@ -66,8 +67,8 @@ export class SetPresence extends Subcommand {
 
         try {
             this.client.presences.setManualPresence(activityData, type, status, url || undefined)
-            return interaction.reply({ 
-                content: `✅ Presence set to **${ActivityType[type]}** *${activityData || 'No activity'}* (${status})`, 
+            return interaction.reply({
+                content: `✅ Presence set to **${ActivityType[type]}** *${activityData || 'No activity'}* (${status})`,
                 flags: ['Ephemeral']
             })
         } catch (error) {
@@ -135,9 +136,9 @@ export class SetPresence extends Subcommand {
 
         try {
             await this.client.presences.addPresence(name, type, status, url || undefined)
-            return interaction.reply({ 
-                content: `✅ Added "**${name}**" (${ActivityType[type]}, ${status}) to cycle`, 
-                flags: ['Ephemeral'] 
+            return interaction.reply({
+                content: `✅ Added "**${name}**" (${ActivityType[type]}, ${status}) to cycle`,
+                flags: ['Ephemeral']
             })
         } catch (error) {
             return interaction.reply({ content: '❌ Failed to add presence to cycle.', flags: ['Ephemeral'] })
@@ -192,7 +193,7 @@ export class SetPresence extends Subcommand {
         try {
             const intervalMs = ms(intervalStr as any)
             if (typeof intervalMs !== 'number' || intervalMs < ms('30s')) throw new Error('Minimum interval is 30 seconds')
-            
+
             await this.client.presences.setInterval(intervalMs)
             return message.channel.send(`⏱️ Cycling interval set to **${ms(intervalMs, { long: true })}**`)
         } catch (error) {
@@ -205,17 +206,17 @@ export class SetPresence extends Subcommand {
 
         try {
             const intervalMs = ms(intervalStr as any)
-            if (typeof intervalMs !== 'number' || intervalMs < 30000) throw new Error('Minimum interval is 30 seconds')
-            
+            if (typeof intervalMs !== 'number' || intervalMs < ms('30s')) throw new Error('Minimum interval is 30 seconds')
+
             await this.client.presences.setInterval(intervalMs)
-            return interaction.reply({ 
-                content: `⏱️ Cycling interval set to **${ms(intervalMs, { long: true })}**`, 
-                flags: ['Ephemeral'] 
+            return interaction.reply({
+                content: `⏱️ Cycling interval set to **${ms(intervalMs, { long: true })}**`,
+                flags: ['Ephemeral']
             })
         } catch (error) {
-            return interaction.reply({ 
-                content: '❌ Invalid time format. Use formats like: 5m, 30s, 2h', 
-                flags: ['Ephemeral'] 
+            return interaction.reply({
+                content: '❌ Invalid time format. Use formats like: 5m, 30s, 2h',
+                flags: ['Ephemeral']
             })
         }
     }
@@ -234,13 +235,13 @@ export class SetPresence extends Subcommand {
     private buildPresenceListEmbed(presences: any[]) {
         const embed = new EmbedBuilder()
             .setTitle('🎭 Presence Cycle List')
-            .setColor(0x7C3AED)
+            .setColor(Colors.Purple)
             .setTimestamp()
 
         if (presences.length === 0) {
             embed.setDescription('No presences in cycle list.')
         } else {
-            const list = presences.map((p, i) => 
+            const list = presences.map((p, i) =>
                 `${i + 1}. **${ActivityType[p.type]}** *${p.name}* (${p.status})`
             ).join('\n')
             embed.setDescription(list)
@@ -254,10 +255,10 @@ export class SetPresence extends Subcommand {
         const isOverridden = this.client.presences.isOverridden()
         const interval = ms(this.client.presences.getInterval(), { long: true })
         const presenceCount = this.client.presences.getPresences().length
-        
+
         const embed = new EmbedBuilder()
             .setTitle('🎭 Presence Manager Status')
-            .setColor(isCycling ? 0x10B981 : 0xEF4444)
+            .setColor(isCycling ? Colors.NovaGreen : Colors.Red)
             .addFields(
                 { name: 'Cycling', value: isCycling ? '✅ Active' : '❌ Stopped', inline: true },
                 { name: 'Manual Override', value: isOverridden ? '🔒 Enabled' : '🔓 Disabled', inline: true },

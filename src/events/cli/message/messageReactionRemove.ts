@@ -15,6 +15,7 @@ export class EventListener extends Listener {
         }
 
         if (!reaction.message.guild) return
-        await this.client.reactionRoles.handleReactionRemove(reaction, user)
+
+        await this.client.roleGroups.handleReactionRemove(reaction, user)
     }
 }

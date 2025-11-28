@@ -1,6 +1,6 @@
 import { Args, Command } from '@sapphire/framework'
 import { ApplyOptions } from '@sapphire/decorators'
-import type { Message, TextChannel } from 'discord.js'
+import type { Guild, Message, TextChannel } from 'discord.js'
 import { getInput, yes } from '../../lib/util/utilities'
 
 @ApplyOptions<Command.Options>({
@@ -20,10 +20,10 @@ export class SetDatabaseKey extends Command {
     public async messageRun(message: Message, args: Args) {
         if (!message.channel.isSendable()) return
 
-        const key = await args.pickResult('string').then(res => res.isOk ? res.unwrap() : null)
+        const key = await args.pickResult('string').then(res => res.isOk() ? res.unwrap() : null)
         if (!key) return message.channel.send({ content: 'No key provided.' })
 
-        const value = await args.pickResult('string').then(res => res.isOk ? res.unwrap() : null)
+        const value = await args.pickResult('string').then(res => res.isOk() ? res.unwrap() : null)
         if (!value) return message.channel.send({ content: 'No value provided.' })
 
         const guildResolvable = args.getOption('guild')
@@ -55,16 +55,12 @@ export class SetDatabaseKey extends Command {
         channel: any
         requireConfirmation: boolean
     }) {
-        let guild: any
+        let guild: Guild
 
-        if (!guildResolvable) {
-            guild = context.channel?.guild || await this.client.guilds.cache.first()
-        } else {
-            try {
-                guild = await this.client.guilds.fetch(guildResolvable)
-            } catch {
-                return context.sendMessage({ content: 'Guild not found.' })
-            }
+        if (!guildResolvable) guild = context.channel?.guild
+        else {
+            try { guild = await this.client.guilds.fetch(guildResolvable) }
+            catch { return context.sendMessage({ content: 'Guild not found.' }) }
         }
 
         if (!guild) return context.sendMessage({ content: 'Guild not found.' })
@@ -79,11 +75,10 @@ export class SetDatabaseKey extends Command {
         }
 
         this.client.settings.set(guild, key, value)
-        const guildName = guildResolvable ? guild.name : 'this guild'
-        return context.sendMessage({ 
-            content: guildResolvable 
-                ? `Database key has been set for guild \`${guild.name}\`.` 
-                : 'Database key has been set.' 
+        return context.sendMessage({
+            content: guildResolvable
+                ? `Database key has been set for guild \`${guild.name}\`.`
+                : 'Database key has been set for this guild.'
         })
     }
 

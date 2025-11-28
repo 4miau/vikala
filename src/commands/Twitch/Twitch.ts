@@ -46,9 +46,9 @@ export class Twitch extends Subcommand {
     async twitchMsgAdd(message: Message, args: Args) {
         if (!message.channel.isSendable()) return
 
-        const name = await args.pickResult('string').then(res => res.isOk ? res.unwrap() : null)
+        const name = await args.pickResult('string').then(res => res.isOk() ? res.unwrap() : null)
         const channel = (await args.pickResult('guildTextChannel')).unwrapOrElse(() => message.channel)
-        const msg = await args.restResult('string').then(res => res.isOk ? res.unwrap() : null)
+        const msg = await args.restResult('string').then(res => res.isOk() ? res.unwrap() : null)
 
         return this.handleAdd(name, message.guild, channel.id, msg, (content) => (message.channel as TextChannel).send(content))
     }
@@ -64,7 +64,7 @@ export class Twitch extends Subcommand {
     async twitchMsgRemove(message: Message, args: Args) {
         if (!message.channel.isSendable()) return
 
-        const name = await args.pickResult('string').then(res => res.isOk ? res.unwrap() : null)
+        const name = await args.pickResult('string').then(res => res.isOk() ? res.unwrap() : null)
         return this.handleRemove(name, message.guild, (content) => (message.channel as TextChannel).send(content))
     }
 
@@ -76,8 +76,8 @@ export class Twitch extends Subcommand {
     async twitchMsgMove(message: Message, args: Args) {
         if (!message.channel.isSendable()) return
 
-        const name = await args.pickResult('string').then(res => res.isOk ? res.unwrap() : null)
-        const channel = await args.pickResult('guildTextChannel').then(res => res.isOk ? res.unwrap() : null)
+        const name = await args.pickResult('string').then(res => res.isOk() ? res.unwrap() : null)
+        const channel = await args.pickResult('guildTextChannel').then(res => res.isOk() ? res.unwrap() : null)
 
         if (!channel) {
             return (message.channel as TextChannel).send({ content: 'You must provide a valid text channel to move notifications to.' })
@@ -96,8 +96,8 @@ export class Twitch extends Subcommand {
     async twitchMsgMessage(message: Message, args: Args) {
         if (!message.channel.isSendable()) return
 
-        const name = await args.pickResult('string').then(res => res.isOk ? res.unwrap() : null)
-        const msg = await args.restResult('string').then(res => res.isOk ? res.unwrap() : null)
+        const name = await args.pickResult('string').then(res => res.isOk() ? res.unwrap() : null)
+        const msg = await args.restResult('string').then(res => res.isOk() ? res.unwrap() : null)
 
         return this.handleMessage(name, message.guild, msg, (content) => (message.channel as TextChannel).send(content))
     }
@@ -112,8 +112,8 @@ export class Twitch extends Subcommand {
     async twitchMsgEmbed(message: Message, args: Args) {
         if (!message.channel.isSendable()) return
 
-        const name = await args.pickResult('string').then(res => res.isOk ? res.unwrap() : null)
-        const state = await args.pickResult('boolean').then(res => res.isOk ? res.unwrap() : null)
+        const name = await args.pickResult('string').then(res => res.isOk() ? res.unwrap() : null)
+        const state = await args.pickResult('boolean').then(res => res.isOk() ? res.unwrap() : null)
 
         return this.handleEmbed(name, message.guild, state, (content) => (message.channel as TextChannel).send(content))
     }

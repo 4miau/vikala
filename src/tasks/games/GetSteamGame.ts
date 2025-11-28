@@ -17,7 +17,7 @@ export default class GetSteamGame extends Task {
         console.log(obj)
 
         return this.client.api.set(obj)
-            .call(true)
+            .call()
             .then((res) => res[gameId].data)
     }
 }

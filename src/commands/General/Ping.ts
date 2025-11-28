@@ -1,5 +1,5 @@
 import { Command } from '@sapphire/framework'
-import type { Message, TextChannel } from 'discord.js'
+import type { Message } from 'discord.js'
 import { ApplyOptions } from '@sapphire/decorators'
 
 @ApplyOptions<Command.Options>({
@@ -13,12 +13,10 @@ export class Ping extends Command {
 	client = this.container.client
 
 	public async messageRun(message: Message) {
-		if (!message.channel.isTextBased()) return
+		if (!message.channel.isSendable()) return
 
-		const channel = message.channel as TextChannel
-		const msg = await channel.send('Ping?')
-
-		const content = `Pong! Bot Latency ${Math.round(this.client.ws.ping)}ms. API Latency ${
+		const msg = await message.channel.send('Ping?')
+		const content = `Pong 🏓! Bot Latency ${Math.round(this.client.ws.ping)}ms. API Latency ${
 			msg.createdTimestamp - message.createdTimestamp
 		}ms.`
 
@@ -26,17 +24,12 @@ export class Ping extends Command {
 	}
 
 	public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
-		await interaction.deferReply()
-		const reply = await interaction.followUp({ content: 'Ping?', flags: ['Ephemeral'] })
+		const reply = await interaction.reply({ content: 'Ping?', flags: ['Ephemeral'] })
+		const content = `Pong 🏓! Bot Latency ${Math.round(this.client.ws.ping)}ms. API Latency ${
+			reply.createdTimestamp - interaction.createdTimestamp
+		}ms.`
 
-		try {
-			const diff = reply.createdTimestamp - interaction.createdTimestamp
-			const ping = Math.round(this.container.client.ws.ping)
-
-			return reply.edit(`Pong 🏓! (Round trip took: ${diff}ms. Heartbeat: ${ping}ms.)`)
-		} catch {
-			return reply.edit({ content: 'Failed to retrieve ping :('  })
-		}
+		return interaction.editReply(content)
 	}
 
 	public override registerApplicationCommands(registry: Command.Registry) {

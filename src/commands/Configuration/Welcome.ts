@@ -2,6 +2,7 @@ import { Args } from '@sapphire/framework'
 import { Subcommand } from '@sapphire/plugin-subcommands'
 import { ApplyOptions } from '@sapphire/decorators'
 import { EmbedBuilder, Message, TextChannel } from 'discord.js'
+import { Colors } from '../../lib/util/Colors'
 
 @ApplyOptions<Subcommand.Options>({
     name: 'welcome',
@@ -39,7 +40,7 @@ export class WelcomeCommand extends Subcommand {
 
         const embed = new EmbedBuilder()
             .setTitle('🎉 Welcome Configuration')
-            .setColor(0x00ff00)
+            .setColor(Colors.Green)
             .addFields([
                 { name: 'Status', value: config.enabled ? '✅ Enabled' : '❌ Disabled', inline: true },
                 { name: 'Channel', value: config.channel ? `<#${config.channel}>` : 'Not set', inline: true },
@@ -60,7 +61,7 @@ export class WelcomeCommand extends Subcommand {
 
         const embed = new EmbedBuilder()
             .setTitle('🎉 Welcome Configuration')
-            .setColor(0x00ff00)
+            .setColor(Colors.Green)
             .addFields([
                 { name: 'Status', value: config.enabled ? '✅ Enabled' : '❌ Disabled', inline: true },
                 { name: 'Channel', value: config.channel ? `<#${config.channel}>` : 'Not set', inline: true },
@@ -80,7 +81,7 @@ export class WelcomeCommand extends Subcommand {
         }
 
         const welcomeMessage = await args.restResult('string')
-        
+
         if (!welcomeMessage.ok || !welcomeMessage.unwrap().trim()) {
             return message.channel.send('❌ Please provide a welcome message.\nExample: `welcome set Welcome {user} to {guild}!`')
         }
@@ -115,7 +116,7 @@ export class WelcomeCommand extends Subcommand {
         }
 
         const channel = await args.pickResult('guildTextChannel')
-        
+
         if (!channel.ok) {
             return message.channel.send('❌ Please mention a valid text channel.\nExample: `welcome channel #general`')
         }
@@ -148,7 +149,7 @@ export class WelcomeCommand extends Subcommand {
         }
 
         const action = await args.pickResult('string')
-        
+
         if (!action.ok) {
             return message.channel.send('❌ Please specify `enable`, `disable`, or `set <message>`.\nExamples:\n`welcome dm enable`\n`welcome dm set Welcome to {guild}!`')
         }
@@ -167,7 +168,7 @@ export class WelcomeCommand extends Subcommand {
 
             case 'set':
                 const dmMessage = await args.restResult('string')
-                
+
                 if (!dmMessage.ok || !dmMessage.unwrap().trim()) {
                     return message.channel.send('❌ Please provide a DM message.\nExample: `welcome dm set Welcome to {guild}! Check our rules.`')
                 }

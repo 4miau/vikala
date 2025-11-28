@@ -1,6 +1,6 @@
 import { Args } from '@sapphire/framework'
 import { ApplyOptions } from '@sapphire/decorators'
-import type { Message, TextChannel } from 'discord.js'
+import type { Guild, Message, TextChannel } from 'discord.js'
 import { Subcommand } from '@sapphire/plugin-subcommands'
 
 @ApplyOptions<Subcommand.Options>({
@@ -39,7 +39,7 @@ export class CreateInvite extends Subcommand {
         return this.handleGetExistingInvite(interaction.guild, (content) => interaction.reply({ ...content, flags: ['Ephemeral'] }))
     }
 
-    private async handleCreateInvite(guild: any, channelId: string, sendFn: (content: any) => Promise<any>) {
+    private async handleCreateInvite(guild: Guild, channelId: string, sendFn: (content: any) => Promise<any>) {
         try {
             const invite = await guild.invites.create(channelId, { maxAge: 0, maxUses: 0, unique: true })
             return sendFn({ content: `Here is your new invite link: ${invite.url}` })
@@ -48,7 +48,7 @@ export class CreateInvite extends Subcommand {
         }
     }
 
-    private async handleGetExistingInvite(guild: any, sendFn: (content: any) => Promise<any>) {
+    private async handleGetExistingInvite(guild: Guild, sendFn: (content: any) => Promise<any>) {
         try {
             const invites = await guild.invites.fetch()
             const invite = invites.first()

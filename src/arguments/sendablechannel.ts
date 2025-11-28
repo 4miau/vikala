@@ -9,7 +9,6 @@ export class SendableChannelArgument extends Argument<SendableChannel> {
     public run(parameter: string, context: Argument.Context): Argument.Result<SendableChannel> {
         const channelResult = Resolvers.resolveGuildChannel(parameter, context.message!.guild)
 
-        //GuildBasedChannelTypes
         if (channelResult.ok && !isNullish(channelResult) && channelResult.unwrap().isSendable()) return this.ok(channelResult.unwrap() as SendableChannel)
 
         return this.error({

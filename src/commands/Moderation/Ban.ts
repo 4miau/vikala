@@ -39,7 +39,7 @@ export class Ban extends Command {
             const response = (await getInput(message.channel, { userId: message.author.id }))[0]
             if (!yes(response)) return confirmation.edit('Moderator has not confirmed the ban, the command has now been cancelled.')
 
-            confirmation?.deletable ? confirmation.delete() : null
+            confirmation?.deletable ? confirmation?.delete() : null
         }
 
         members.forEach(async (m) => {

@@ -21,6 +21,8 @@ export default class RawgGameSearch extends Task {
             }
         }
 
-        return this.client.api.set(obj).call().then((res) => res.results)
+        return this.client.api.set(obj)
+            .call()
+            .then((res) => res.results)
     }
 }

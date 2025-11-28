@@ -136,18 +136,14 @@ export class Prune extends Subcommand {
         if (!message.channel.isSendable()) return
         const amount = args.getOptionResult('amount', 'a').map(val => parseInt(val)).unwrapOrElse(() => 50)
         const messages = await message.channel.messages.fetch({ limit: amount })
-        const deleted = await this.executeMessagePrune(messages, m =>
-            /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/g.test(m.content)
-        )
+        const deleted = await this.executeMessagePrune(messages, m => this.hasValidUrl(m.content))
         return this.handlePruneResult(deleted, message, 'messages with links')
     }
 
     public async pruneLinksInput(interaction: Subcommand.ChatInputCommandInteraction) {
         const amount = interaction.options.getInteger('amount') ?? 50
         const messages = await interaction.channel?.messages.fetch({ limit: amount })
-        const deleted = messages ? await this.executeMessagePrune(messages, m =>
-            /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/g.test(m.content)
-        ) : 0
+        const deleted = messages ? await this.executeMessagePrune(messages, m => this.hasValidUrl(m.content)) : 0
         return this.handlePruneResult(deleted, interaction, 'messages with links')
     }
 
@@ -262,6 +258,28 @@ export class Prune extends Subcommand {
                 .then((m: Message) => setTimeout(() => m?.delete(), 5000)) : null
         }
         return context.reply({ content: successMsg, flags: ['Ephemeral'] })
+    }
+
+    private hasValidUrl(text: string): boolean {
+        const words = text.split(/\s+/)
+        return words.some(word => {
+            const cleanWord = word.replace(/^[^\w]+|[^\w]+$/g, '')
+
+            try {
+                const url = new URL(cleanWord)
+                return url.protocol === 'http:' || url.protocol === 'https:'
+            } catch {
+                if (/\w+\.\w{2,}/.test(cleanWord)) {
+                    try {
+                        const url = new URL(`http://${cleanWord}`)
+                        return url.protocol === 'http:'
+                    } catch {
+                        return false
+                    }
+                }
+                return false
+            }
+        })
     }
 
     public override registerApplicationCommands(registry: Subcommand.Registry) {

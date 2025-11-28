@@ -4,7 +4,7 @@ import { EmbedBuilder, OAuth2Scopes, type Message } from 'discord.js'
 
 @ApplyOptions<Command.Options>({
     name: 'invite',
-    aliases: [],
+    aliases: ['inv'],
     description: 'Sends an invite link for the bot.',
     usage: 'invite'
 })

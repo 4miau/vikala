@@ -35,8 +35,7 @@ export class Eval extends Command {
     client = this.container.client
     private static readonly DEFAULT_TIMEOUT = 60000 // 60 seconds
     private static readonly MAX_OUTPUT_LENGTH = 2000
-    
-    // Cache for eval context to avoid recreating imports
+
     private cachedContext: object | null = null
 
     public async messageRun(message: Message, args: Args) {
@@ -45,10 +44,8 @@ export class Eval extends Command {
         const rawCode = await args.restResult('string').then(res => res.isOk() ? res.unwrap() : null)
         if (!rawCode) return message.channel.send({ content: 'You must provide code to evaluate.' })
 
-        // Parse code blocks and extract code
         const { code, detectedLanguage } = this.parseCodeInput(rawCode)
 
-        // Parse flags and options
         const isAsync = args.getFlags('async')
         const isSilent = args.getFlags('silent')
         const isJson = args.getFlags('json') || detectedLanguage === 'json'
@@ -58,7 +55,6 @@ export class Eval extends Command {
         const depthOption = args.getOption('depth')
         const depth = depthOption ? Number(depthOption) : 0
 
-        // Execute the code
         const result = await this.executeCode(message, args, code, {
             async: isAsync,
             timeout: timeout,
@@ -67,7 +63,6 @@ export class Eval extends Command {
             depth: depth
         })
 
-        // Handle silent mode
         if (isSilent) {
             if (!result.success && result.result) {
                 this.container.client.logger.error('EVAL ERROR', result.result)
@@ -75,7 +70,6 @@ export class Eval extends Command {
             return message.react('✅').catch(() => null)
         }
 
-        // Format and send output
         return this.sendResult(message, result, isJson ? 'json' : 'js')
     }
 
@@ -130,12 +124,8 @@ export class Eval extends Command {
             depth: number
         }
     ): Promise<EvalResult> {
-        // Wrap in async function if needed
-        if (options.async) {
-            code = `(async () => {\n${code}\n})()`
-        }
+        if (options.async) code = `(async () => {\n${code}\n})()`
 
-        // Create script
         let script: Script
         try {
             script = new Script(code, { filename: 'eval' })
@@ -147,10 +137,8 @@ export class Eval extends Command {
             }
         }
 
-        // Setup execution context
         const evalContext = createContext({
             ...(await this.getEvalContext()),
-            // Bot specific context
             client: this.client,
             message: context instanceof Message ? context : null,
             interaction: context instanceof Message ? null : context,
@@ -161,7 +149,6 @@ export class Eval extends Command {
             member: context instanceof Message ? context.member : (context as any).member
         })
 
-        // Execute with timing
         const stopwatch = new Stopwatch()
         let success: boolean
         let result: unknown
@@ -191,16 +178,12 @@ export class Eval extends Command {
 
         stopwatch.stop()
 
-        // Format result
         if (typeof result !== 'string') {
             if (result instanceof Error) {
                 result = result.stack || result.message
             } else if (options.json) {
-                try {
-                    result = JSON.stringify(result, null, 2)
-                } catch {
-                    result = inspect(result, { depth: options.depth, showHidden: options.showHidden })
-                }
+                try { result = JSON.stringify(result, null, 2) }
+                catch { result = inspect(result, { depth: options.depth, showHidden: options.showHidden }) }
             } else {
                 result = inspect(result, { depth: options.depth, showHidden: options.showHidden })
             }
@@ -215,7 +198,6 @@ export class Eval extends Command {
 
     private async getEvalContext(): Promise<object> {
         if (!this.cachedContext) {
-            // Import modules safely without exposing browser globals
             const [
                 buffer,
                 crypto,
@@ -316,10 +298,8 @@ export class Eval extends Command {
     }
 
     private parseCodeInput(input: string): { code: string; detectedLanguage: string | null } {
-        // Remove leading/trailing whitespace
         input = input.trim()
 
-        // Check for code blocks (```lang\ncode``` or ```\ncode```)
         const codeBlockRegex = /^```(?:([a-zA-Z]+)(?:\s*\n|\s+))?([\s\S]*?)```$/
         const match = input.match(codeBlockRegex)
 
@@ -333,7 +313,6 @@ export class Eval extends Command {
             }
         }
 
-        // No code block found, return as-is
         return {
             code: input,
             detectedLanguage: null
@@ -343,7 +322,6 @@ export class Eval extends Command {
     private normalizeLanguage(language: string | null): string | null {
         if (!language) return null
 
-        // Normalize common language aliases to standard names
         switch (language) {
             case 'js':
             case 'javascript':
@@ -366,7 +344,7 @@ export class Eval extends Command {
     private cleanOutput(text: string): string {
         return text
             .replace(new RegExp(this.client.token || 'undefined', 'gi'), '[TOKEN]')
-            .replace(/[\u200B-\u200D\uFEFF]/g, '') // Remove zero-width characters
+            .replace(/[\u200B-\u200D\uFEFF]/g, '')
     }
 
     private formatOutput(result: EvalResult, language: string): string {

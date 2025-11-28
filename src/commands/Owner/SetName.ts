@@ -18,7 +18,7 @@ export class SetName extends Command {
     public async messageRun(message: Message, args: Args) {
         if (!message.channel.isSendable()) return
 
-        const name = (await args.restResult('string').then(res => res.isOk ? res.unwrap() : null)).trim()
+        const name = (await args.restResult('string').then(res => res.isOk() ? res.unwrap() : null)).trim()
         if (!name) return message.channel.send({ content: 'You must provide a name to set for the bot.' })
 
         try {

@@ -3,6 +3,7 @@ import { Subcommand } from '@sapphire/plugin-subcommands'
 import { ApplyOptions } from '@sapphire/decorators'
 import { EmbedBuilder, Message, User } from 'discord.js'
 import { Colors } from '../../lib/util/Colors'
+import { arrayEmpty } from 'miau-utilities'
 
 @ApplyOptions<Subcommand.Options>({
     name: 'level',
@@ -156,9 +157,7 @@ export class LevelCommand extends Subcommand {
 
         const leaderboard = await this.client.leveling.getLeaderboard(message.guild.id, 10)
 
-        if (leaderboard.length === 0) {
-            return message.channel.send('No users have gained XP yet!')
-        }
+        if (leaderboard.length === 0) return message.channel.send('No users have gained XP yet!')
 
         const embed = await this.createLeaderboardEmbed(leaderboard)
         return message.channel.send({ embeds: [embed] })
@@ -169,9 +168,7 @@ export class LevelCommand extends Subcommand {
 
         const leaderboard = await this.client.leveling.getLeaderboard(interaction.guild.id, 10)
 
-        if (leaderboard.length === 0) {
-            return interaction.reply({ content: 'No users have gained XP yet!', flags: ['Ephemeral'] })
-        }
+        if (arrayEmpty(leaderboard)) return interaction.reply({ content: 'No users have gained XP yet!', flags: ['Ephemeral'] })
 
         const embed = await this.createLeaderboardEmbed(leaderboard)
         return interaction.reply({ embeds: [embed], flags: ['Ephemeral'] })
@@ -208,7 +205,7 @@ export class LevelCommand extends Subcommand {
             .setTimestamp()
 
         const description = await Promise.all(leaderboard.map(async (entry, index) => {
-            const user = await this.client.users.fetch(entry.userId).catch(() => null)
+            const user: User = await this.client.users.fetch(entry.userId).catch(() => null)
             const username = user ? user.username : 'Unknown User'
             const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`
 
@@ -328,7 +325,7 @@ export class LevelCommand extends Subcommand {
     public async chatInputConfig(interaction: Subcommand.ChatInputCommandInteraction) {
         if (!interaction.guild) return
         if (!interaction.memberPermissions?.has('ManageGuild')) {
-            return interaction.reply({ content: '❌ You need the Manage Server permission to use this command.', ephemeral: true })
+            return interaction.reply({ content: '❌ You need the Manage Server permission to use this command.', flags: ['Ephemeral'] })
         }
 
 
@@ -349,7 +346,7 @@ export class LevelCommand extends Subcommand {
             ])
             .setFooter({ text: 'Use message commands to modify settings: "level config <setting> <value>"' })
 
-        return interaction.reply({ embeds: [embed], ephemeral: true })
+        return interaction.reply({ embeds: [embed], flags: ['Ephemeral'] })
     }
 
     public override registerApplicationCommands(registry: Subcommand.Registry) {

@@ -1,15 +1,9 @@
 import { GuildMember, Guild, Role } from 'discord.js'
 
-import Vikala from '../client/vikala'
 import AutoroleRule, { IAutoroleRule } from '../database/AutoroleRule'
 
 export default class AutoroleManager {
-    private client: Vikala
     private delayedRoles = new Map<string, NodeJS.Timeout>()
-
-    constructor(client: Vikala) {
-        this.client = client
-    }
 
     public async handleMemberJoin(member: GuildMember): Promise<void> {
         const rules = await this.getActiveRules(member.guild.id, 'join')

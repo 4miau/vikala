@@ -103,9 +103,7 @@ export default class EventLogger {
         return isValid ? true : false
     }
 
-    private isBot(user?: User): boolean {
-        return user?.bot === true
-    }
+    private isBot(user?: User): boolean { return user?.bot === true }
 
     private async createLogEntry(
         guild: Guild,
@@ -231,15 +229,15 @@ export default class EventLogger {
             case 'INVITE_CREATED':
                 return 'an invite was created: '
             case 'INVITE_DELETED':
-                return 'an invite was deleted: '
+                return 'an invite was deleted'
             case 'USER_UPDATED':
                 return 'user was updated.'
             case 'GUILD_MEMBER_ADD':
-                return 'a member joined the guild: '
+                return 'joined the guild'
             case 'GUILD_MEMBER_REMOVE':
-                return 'a member left the guild: '
+                return 'left the guild'
             case 'GUILD_MEMBER_UPDATED':
-                return 'a member was updated: '
+                return 'was updated in the guild'
         }
     }
 

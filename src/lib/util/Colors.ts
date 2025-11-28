@@ -41,4 +41,8 @@ export const Colors = {
     'HighlightYellow': '#fee75c' as ColorResolvable,
     'Fuchsia': '#eb459e' as ColorResolvable,
     'Critical': '#ed4245' as ColorResolvable,
+    'CatRed': '#FF6B6B' as ColorResolvable,
+    'DogTeal': '#4ECDC4' as ColorResolvable,
+    'BunnyPink': '#FFB6C1' as ColorResolvable,
+    'FoxOrange': '#FF8C42' as ColorResolvable,
 }
