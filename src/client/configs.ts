@@ -15,7 +15,10 @@ import PresenceManager from '../structures/PresenceManager'
 import LevelingManager from '../structures/LevelingManager'
 import WelcomeManager from '../structures/WelcomeManager'
 import AutoroleManager from '../structures/AutoroleManager'
-import ReactionRoleManager from '../structures/ReactionRoleManager'
+import AutomodManager from '../structures/AutomodManager'
+import RoleGroupManager from '../structures/RoleGroupManager'
+import HotReloadWatcher from '../structures/HotReloadWatcher'
+import HotReloadManager from '../structures/HotReloadManager'
 
 export default class Components {
     client: Vikala
@@ -75,8 +78,21 @@ export default class Components {
         this.client.welcome = new WelcomeManager(this.client)
         await this.client.welcome._init()
 
-        this.client.autoroles = new AutoroleManager(this.client)
+        this.client.autoroles = new AutoroleManager()
 
-        this.client.reactionRoles = new ReactionRoleManager(this.client)
+        this.client.automod = new AutomodManager(this.client)
+
+        this.client.roleGroups = new RoleGroupManager(this.client)
+
+        this.client.hotReloadManager = new HotReloadManager(this.client)
+        this.client.hotReloadWatcher = new HotReloadWatcher(this.client)
+
+        const nodeEnv = process.env.NODE_ENV?.replace(/['"]/g, '').toLowerCase()
+        if (nodeEnv !== 'production') {
+            this.client.logger.info(`🔧 Starting hot reload watcher (NODE_ENV: ${nodeEnv})`)
+            this.client.hotReloadWatcher.start()
+        } else {
+            this.client.logger.info(`🚫 Hot reload disabled in production (NODE_ENV: ${nodeEnv})`)
+        }
     }
 }

@@ -20,7 +20,10 @@ import PresenceManager from '../structures/PresenceManager'
 import LevelingManager from '../structures/LevelingManager'
 import WelcomeManager from '../structures/WelcomeManager'
 import AutoroleManager from '../structures/AutoroleManager'
-import ReactionRoleManager from '../structures/ReactionRoleManager'
+import AutomodManager from '../structures/AutomodManager'
+import RoleGroupManager from '../structures/RoleGroupManager'
+import HotReloadWatcher from '../structures/HotReloadWatcher'
+import HotReloadManager from '../structures/HotReloadManager'
 
 declare module '@sapphire/framework' {
     interface SapphireClient {
@@ -37,7 +40,8 @@ declare module '@sapphire/framework' {
         leveling: LevelingManager
         welcome: WelcomeManager
         autoroles: AutoroleManager
-        reactionRoles: ReactionRoleManager
+        automod: AutomodManager
+        roleGroups: RoleGroupManager
         events: EventLogger
         tasks: TaskStore
         router: Router
@@ -45,6 +49,8 @@ declare module '@sapphire/framework' {
         twitch: TwitchManager
         api: APIManager
         queue: Queue
+        hotReloadWatcher: HotReloadWatcher
+        hotReloadManager: HotReloadManager
     }
 }
 
@@ -72,10 +78,13 @@ export default class Vikala extends SapphireClient {
     leveling: LevelingManager
     welcome: WelcomeManager
     autoroles: AutoroleManager
+    automod: AutomodManager
+    roleGroups: RoleGroupManager
     twitch: TwitchManager
     api: APIManager
     queue: Queue
-
+    hotReloadWatcher: HotReloadWatcher
+    hotReloadManager: HotReloadManager
 
     public constructor(config: BotOptions) {
         super({
@@ -136,4 +145,3 @@ export default class Vikala extends SapphireClient {
         }
     }
 }
-

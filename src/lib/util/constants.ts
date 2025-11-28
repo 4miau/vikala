@@ -1,6 +1,12 @@
 // ANIME
 export const animeQuotesApi: string = 'https://yurippe.vercel.app/api/quotes'
 
+// ANIMALS
+export const catApi: string = 'https://api.thecatapi.com/v1/images/search'
+export const dogApi: string = 'https://dog.ceo/api/breeds/image/random'
+export const bunnyApi: string = 'https://api.bunnies.io/v2/loop/random/?media=gif'
+export const foxApi: string = 'https://randomfox.ca/floof/'
+
 // 8BALL
 export const eightBallReplies: string[] = [
     'Yes', 'No', 'Maybe', 'Probably', 'Probably not', 'It is certain, yes', 'I can tell you certainly, no', 'Without a doubt, yes', 'Definitely', 'Definitely not',
