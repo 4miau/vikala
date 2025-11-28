@@ -79,8 +79,8 @@ export default class AutoroleManager {
                 if (currentMember && await this.shouldApplyRule(currentMember, rule)) {
                     await this.applyRole(currentMember, rule)
                 }
-            } catch (error) {
-                console.error(`Failed to apply delayed autorole: ${error}`)
+            } catch {
+                // Failed to apply delayed autorole
             } finally {
                 this.delayedRoles.delete(timeoutKey)
             }
@@ -99,10 +99,8 @@ export default class AutoroleManager {
             if (rule.removeConflicting) {
                 await this.handleConflictingRoles(member, rule)
             }
-
-            console.log(`Applied autorole ${role.name} to ${member.user.tag} in ${member.guild.name}`)
-        } catch (error) {
-            console.error(`Failed to apply autorole to ${member.user.tag}: ${error}`)
+        } catch {
+            // Failed to apply autorole
         }
     }
 
@@ -118,8 +116,8 @@ export default class AutoroleManager {
             if (member.roles.cache.has(conflictingRule.roleId)) {
                 try {
                     await member.roles.remove(conflictingRule.roleId, `Autorole conflict resolution`)
-                } catch (error) {
-                    console.error(`Failed to remove conflicting role: ${error}`)
+                } catch {
+                    // Failed to remove conflicting role
                 }
             }
         }

@@ -97,8 +97,7 @@ export class Rawg extends Subcommand {
                 const embed = this.rawgGameEmbed(gameInfo)
                 return context.sendMessage({ embeds: [embed] })
             }
-        } catch (err) {
-            if (!context.isInteraction) console.log(err)
+        } catch {
             return context.sendMessage({ content: 'A valid game was not selected, please try again.' })
         }
     }

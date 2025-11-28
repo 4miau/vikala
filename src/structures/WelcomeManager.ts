@@ -71,8 +71,8 @@ export default class WelcomeManager {
                 const processedMessage = this.processMessageVariables(config.message, member)
                 try {
                     await welcomeChannel.send(processedMessage)
-                } catch (error) {
-                    console.error('Failed to send welcome message:', error)
+                } catch {
+                    // Failed to send welcome message
                 }
             }
         }
@@ -81,8 +81,8 @@ export default class WelcomeManager {
             const processedDmMessage = this.processMessageVariables(config.dmMessage, member)
             try {
                 await member.user.send(processedDmMessage)
-            } catch (error) {
-                console.error('Failed to send DM welcome message:', error)
+            } catch {
+                // Failed to send DM welcome message
             }
         }
     }
@@ -105,8 +105,8 @@ export default class WelcomeManager {
 
         try {
             await goodbyeChannel.send(processedMessage)
-        } catch (error) {
-            console.error('Failed to send goodbye message:', error)
+        } catch {
+            // Failed to send goodbye message
         }
     }
 

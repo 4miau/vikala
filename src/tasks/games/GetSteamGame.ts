@@ -14,8 +14,6 @@ export default class GetSteamGame extends Task {
             url: `${steamApi}${gameId}&l=en`
         }
 
-        console.log(obj)
-
         return this.client.api.set(obj)
             .call()
             .then((res) => res[gameId].data)
