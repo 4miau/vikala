@@ -378,7 +378,7 @@ export default class AutomodManager {
                         severity: 'medium',
                         content: match
                     }
-                } catch (error) {
+                } catch {
                     return {
                         type: 'invites',
                         reason: 'Posted Discord invite link',
@@ -431,10 +431,10 @@ export default class AutomodManager {
             }
 
             const now = Date.now()
-            for (const [key, data] of this.messageTracker) {
+            for (const [key, data] of Array.from(this.messageTracker)) {
                 if (now - data.timestamp > ms('1m')) this.messageTracker.delete(key)
             }
-            for (const [key, data] of this.attachmentTracker) {
+            for (const [key, data] of Array.from(this.attachmentTracker)) {
                 if (now - data.timestamp > ms('1m')) this.attachmentTracker.delete(key)
             }
         }, ms('5m'))
