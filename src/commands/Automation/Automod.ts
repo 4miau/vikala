@@ -6,7 +6,7 @@ import ms from 'ms'
 
 import { Colors } from '../../lib/util/Colors'
 import { AutomodConfig, AutomodRule } from '../../database/AutomodConfig'
-import { AUTOMOD_RULE_NAMES, AUTOMOD_PUNISHMENTS } from '../../lib/util/constants'
+import { AUTOMOD_RULE_NAMES } from '../../lib/util/constants'
 
 @ApplyOptions<Subcommand.Options>({
     name: 'automod',

@@ -34,6 +34,12 @@ export const AUTOMOD_RULE_DESCRIPTIONS: Record<string, string> = {
     'attachment_spam': 'Detects users sending too many attachments rapidly.'
 }
 
+export const AUTOMOD_REGEX = {
+    DISCORD_INVITE: /(https?:\/\/)?(www\.)?(discord\.(gg|io|me|li)|discordapp\.com\/invite)\/([a-zA-Z0-9]+)/gi,
+    NON_LETTERS: /[^a-zA-Z]/g,
+    UPPERCASE_LETTERS: /[A-Z]/g
+} as const
+
 // GAMES
 export const steamApi: string = 'https://store.steampowered.com/api/appdetails?appids='
 export const ggDealsApi: string = 'http://api.gg.deals/v1/prices/by-steam-app-id/'

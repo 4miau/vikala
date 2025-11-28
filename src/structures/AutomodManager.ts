@@ -2,6 +2,7 @@ import { GuildMember, Message, PermissionsBitField, Role } from 'discord.js'
 import ms from 'ms'
 import { AutomodConfig, AutomodRule, IAutomodConfig, IAutomodRule } from '../database/AutomodConfig'
 import Vikala from '../client/vikala'
+import { AUTOMOD_REGEX } from '../lib/util/constants'
 
 interface AutomodViolation {
     type: string
@@ -310,7 +311,7 @@ export default class AutomodManager {
         if (!message.content || message.content.length < 10) return null
 
         const threshold = rule.threshold || 70
-        const letters = message.content.replace(/[^a-zA-Z]/g, '')
+        const letters = message.content.replace(AUTOMOD_REGEX.NON_LETTERS, '')
         if (letters.length < 5) return null
 
         const upperCount = (message.content.match(/[A-Z]/g) || []).length
@@ -358,8 +359,7 @@ export default class AutomodManager {
     private async checkInvites(message: Message, rule: IAutomodRule): Promise<AutomodViolation | null> {
         if (!message.content) return null
 
-        const inviteRegex = /(https?:\/\/)?(www\.)?(discord\.(gg|io|me|li)|discordapp\.com\/invite)\/([a-zA-Z0-9]+)/gi
-        const matches = message.content.match(inviteRegex)
+        const matches = message.content.match(AUTOMOD_REGEX.DISCORD_INVITE)
 
         if (matches && matches.length > 0) {
             for (const match of matches) {

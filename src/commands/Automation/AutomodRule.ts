@@ -264,8 +264,9 @@ export class AutomodRuleCommand extends Subcommand {
         }
 
         if (action === 'remove') {
-            const removed = words.filter(w => rule.blacklist!.includes(w.toLowerCase()))
-            rule.blacklist = rule.blacklist.filter(w => !words.map(w => w.toLowerCase()).includes(w))
+            const lowerWords = words.map(w => w.toLowerCase())
+            const removed = lowerWords.filter(w => rule.blacklist!.includes(w))
+            rule.blacklist = rule.blacklist.filter(w => !lowerWords.includes(w))
             await rule.save()
             return message.channel.send(`✅ Removed **${removed.length}** word(s) from blacklist`)
         }
@@ -308,8 +309,9 @@ export class AutomodRuleCommand extends Subcommand {
         }
 
         if (action === 'remove') {
-            const removed = words.filter(w => rule.blacklist!.includes(w.toLowerCase()))
-            rule.blacklist = rule.blacklist.filter(w => !words.map(w => w.toLowerCase()).includes(w))
+            const lowerWords = words.map(w => w.toLowerCase())
+            const removed = lowerWords.filter(w => rule.blacklist!.includes(w))
+            rule.blacklist = rule.blacklist.filter(w => !lowerWords.includes(w))
             await rule.save()
             return interaction.reply({ content: `✅ Removed **${removed.length}** word(s) from blacklist`, flags: ['Ephemeral'] })
         }
