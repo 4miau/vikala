@@ -113,11 +113,7 @@ export default class HotReloadWatcher {
         const normalizedPath = path.normalize(filePath)
         const relativePath = path.relative(process.cwd(), normalizedPath)
 
-        if (!this.hasFileContentChanged(normalizedPath)) {
-            return
-        }
-
-        this.client.logger.info(`File content changed: ${relativePath}`)
+        if (!this.hasFileContentChanged(normalizedPath)) return
 
         try {
             if (relativePath.includes('/tasks/')) {
