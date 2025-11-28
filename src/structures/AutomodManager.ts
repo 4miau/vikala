@@ -342,7 +342,6 @@ export default class AutomodManager {
         }
 
         tracker.messages++
-        tracker.timestamp = now
 
         if (tracker.messages >= threshold) {
             this.messageTracker.delete(key)
@@ -409,7 +408,6 @@ export default class AutomodManager {
         }
 
         tracker.count += message.attachments.size
-        tracker.timestamp = now
 
         if (tracker.count >= threshold) {
             this.attachmentTracker.delete(key)

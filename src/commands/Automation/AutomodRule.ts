@@ -6,6 +6,7 @@ import ms from 'ms'
 
 import { Colors } from '../../lib/util/Colors'
 import { AutomodRule, IAutomodRule } from '../../database/AutomodConfig'
+import { AUTOMOD_RULE_TYPES, AUTOMOD_PUNISHMENTS, AUTOMOD_RULE_NAMES, AUTOMOD_RULE_DESCRIPTIONS } from '../../lib/util/constants'
 import { arrayEmpty } from 'miau-utilities'
 
 @ApplyOptions<Subcommand.Options>({
@@ -37,8 +38,8 @@ import { arrayEmpty } from 'miau-utilities'
 export class AutomodRuleCommand extends Subcommand {
     client = this.container.client
 
-    private readonly RULE_TYPES = ['spam', 'caps', 'invites', 'bad_words', 'attachment_spam']
-    private readonly PUNISHMENTS = ['warn', 'mute', 'temp_mute', 'kick', 'ban', 'temp_ban']
+    private readonly RULE_TYPES = AUTOMOD_RULE_TYPES
+    private readonly PUNISHMENTS = AUTOMOD_PUNISHMENTS
 
     public async messageEnable(message: Message, args: Args) {
         if (!message.guild || !message.channel.isSendable()) return
@@ -59,13 +60,13 @@ export class AutomodRuleCommand extends Subcommand {
         }
 
         if (rule.enabled) {
-            return message.channel.send(`⚠️ The **${this.formatRuleType(type)}** rule is already enabled.`)
+            return message.channel.send(`⚠️ The **${AUTOMOD_RULE_NAMES[type] || type}** rule is already enabled.`)
         }
 
         rule.enabled = true
         await rule.save()
 
-        return message.channel.send(`✅ Enabled **${this.formatRuleType(type)}** rule.`)
+        return message.channel.send(`✅ Enabled **${AUTOMOD_RULE_NAMES[type] || type}** rule.`)
     }
 
     public async chatInputEnable(interaction: Subcommand.ChatInputCommandInteraction) {
@@ -79,13 +80,13 @@ export class AutomodRuleCommand extends Subcommand {
         }
 
         if (rule.enabled) {
-            return interaction.reply({ content: `⚠️ The **${this.formatRuleType(type)}** rule is already enabled.`, flags: ['Ephemeral'] })
+            return interaction.reply({ content: `⚠️ The **${AUTOMOD_RULE_NAMES[type] || type}** rule is already enabled.`, flags: ['Ephemeral'] })
         }
 
         rule.enabled = true
         await rule.save()
 
-        return interaction.reply(`✅ Enabled **${this.formatRuleType(type)}** rule.`)
+        return interaction.reply(`✅ Enabled **${AUTOMOD_RULE_NAMES[type] || type}** rule.`)
     }
 
     public async messageDisable(message: Message, args: Args) {
@@ -107,13 +108,13 @@ export class AutomodRuleCommand extends Subcommand {
         }
 
         if (!rule.enabled) {
-            return message.channel.send(`⚠️ The **${this.formatRuleType(type)}** rule is already disabled.`)
+            return message.channel.send(`⚠️ The **${AUTOMOD_RULE_NAMES[type] || type}** rule is already disabled.`)
         }
 
         rule.enabled = false
         await rule.save()
 
-        return message.channel.send(`✅ Disabled **${this.formatRuleType(type)}** rule.`)
+        return message.channel.send(`✅ Disabled **${AUTOMOD_RULE_NAMES[type] || type}** rule.`)
     }
 
     public async chatInputDisable(interaction: Subcommand.ChatInputCommandInteraction) {
@@ -127,13 +128,13 @@ export class AutomodRuleCommand extends Subcommand {
         }
 
         if (!rule.enabled) {
-            return interaction.reply({ content: `⚠️ The **${this.formatRuleType(type)}** rule is already disabled.`, flags: ['Ephemeral'] })
+            return interaction.reply({ content: `⚠️ The **${AUTOMOD_RULE_NAMES[type] || type}** rule is already disabled.`, flags: ['Ephemeral'] })
         }
 
         rule.enabled = false
         await rule.save()
 
-        return interaction.reply(`✅ Disabled **${this.formatRuleType(type)}** rule.`)
+        return interaction.reply(`✅ Disabled **${AUTOMOD_RULE_NAMES[type] || type}** rule.`)
     }
 
     public async messageSet(message: Message, args: Args) {
@@ -165,7 +166,7 @@ export class AutomodRuleCommand extends Subcommand {
             return message.channel.send(`❌ ${result.error}`)
         }
 
-        return message.channel.send(`✅ Updated **${this.formatRuleType(type)}** rule: ${result.message}`)
+        return message.channel.send(`✅ Updated **${AUTOMOD_RULE_NAMES[type] || type}** rule: ${result.message}`)
     }
 
     public async chatInputSet(interaction: Subcommand.ChatInputCommandInteraction) {
@@ -185,7 +186,7 @@ export class AutomodRuleCommand extends Subcommand {
             return interaction.reply({ content: `❌ ${result.error}`, flags: ['Ephemeral'] })
         }
 
-        return interaction.reply(`✅ Updated **${this.formatRuleType(type)}** rule: ${result.message}`)
+        return interaction.reply(`✅ Updated **${AUTOMOD_RULE_NAMES[type] || type}** rule: ${result.message}`)
     }
 
     public async messageInfo(message: Message, args: Args) {
@@ -358,7 +359,7 @@ export class AutomodRuleCommand extends Subcommand {
     private buildRuleInfoEmbed(rule: IAutomodRule, guildName: string, guildIcon: string | null): EmbedBuilder {
         const embed = new EmbedBuilder()
             .setColor(rule.enabled ? Colors.Green : Colors.Red)
-            .setAuthor({ name: `${guildName} | ${this.formatRuleType(rule.type)} Rule`, iconURL: guildIcon || undefined })
+            .setAuthor({ name: `${guildName} | ${AUTOMOD_RULE_NAMES[rule.type] || rule.type} Rule`, iconURL: guildIcon || undefined })
             .setTimestamp()
 
         const statusEmoji = rule.enabled ? '✅' : '❌'
@@ -381,32 +382,10 @@ export class AutomodRuleCommand extends Subcommand {
             info += `**Blacklisted Words:** ${rule.blacklist.length} word(s)\n`
         }
 
-        info += `\n**Description:**\n${this.getRuleDescription(rule.type)}`
+        info += `\n**Description:**\n${AUTOMOD_RULE_DESCRIPTIONS[rule.type] || 'No description available.'}`
 
         embed.setDescription(info)
         return embed
-    }
-
-    private getRuleDescription(type: string): string {
-        const descriptions: Record<string, string> = {
-            'spam': 'Detects users sending multiple messages in quick succession.',
-            'caps': 'Detects messages with excessive capital letters above the threshold.',
-            'invites': 'Blocks Discord server invite links in messages.',
-            'bad_words': 'Filters messages containing blacklisted words or phrases.',
-            'attachment_spam': 'Detects users sending too many attachments rapidly.'
-        }
-        return descriptions[type] || 'No description available.'
-    }
-
-    private formatRuleType(type: string): string {
-        const types: Record<string, string> = {
-            'spam': 'Spam',
-            'caps': 'Excessive Caps',
-            'invites': 'Discord Invites',
-            'bad_words': 'Bad Words',
-            'attachment_spam': 'Attachment Spam'
-        }
-        return types[type] || type
     }
 
     public override registerApplicationCommands(registry: Subcommand.Registry) {

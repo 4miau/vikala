@@ -6,6 +6,7 @@ import ms from 'ms'
 
 import { Colors } from '../../lib/util/Colors'
 import { AutomodConfig, AutomodRule } from '../../database/AutomodConfig'
+import { AUTOMOD_RULE_NAMES, AUTOMOD_PUNISHMENTS } from '../../lib/util/constants'
 
 @ApplyOptions<Subcommand.Options>({
     name: 'automod',
@@ -343,7 +344,7 @@ export class AutomodCommand extends Subcommand {
             let rulesInfo = ''
             for (const rule of rules) {
                 const emoji = rule.enabled ? '✅' : '❌'
-                const ruleType = this.formatRuleType(rule.type)
+                const ruleType = AUTOMOD_RULE_NAMES[rule.type] || rule.type
                 rulesInfo += `${emoji} **${ruleType}** - ${rule.punishment}`
                 if (rule.threshold) rulesInfo += ` (threshold: ${rule.threshold})`
                 if (rule.warningsBeforeAction) rulesInfo += ` [${rule.warningsBeforeAction} warnings]`
@@ -354,17 +355,6 @@ export class AutomodCommand extends Subcommand {
         }
 
         return embed
-    }
-
-    private formatRuleType(type: string): string {
-        const types: Record<string, string> = {
-            'spam': 'Spam',
-            'caps': 'Excessive Caps',
-            'invites': 'Discord Invites',
-            'bad_words': 'Bad Words',
-            'attachment_spam': 'Attachment Spam'
-        }
-        return types[type] || type
     }
 
     private async ensureConfig(guildId: string) {
