@@ -65,18 +65,3 @@ Hey, I'm miau! I just create things for fun with my silly little coding. You can
 This is essentially a personal project, but being provided and serviced to the public. I am not a massively experienced coder in terms of producing production code onto GitHub so I appreciate any contributions anyone feels like making. I just love to chill and do my own thing.
 
 [⬆ Back to the top](#vikala)
-
-### Meaningless Dev Progress Notes
-
-> Currently Working on:
->> <i>Moderation</i>
->> <i>Starboard</i>
-
-> Files to revamp:
-
-
-> Future feature implementations
->> <i>Anime/Manga</i>
->> <i>Images</i>
-
->> <i>Actions</i>
