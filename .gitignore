@@ -6,3 +6,4 @@ src/keys
 templates
 .github
 .results
+src/commands/Owner/test.ts

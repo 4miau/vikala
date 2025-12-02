@@ -5,8 +5,7 @@ import '@sapphire/plugin-hmr'
 const config = {
     owner: envs.owner,
     defaultPrefix: envs.defaultPrefix,
-    token: Buffer.from(envs.token, 'base64').toString(),
-    intents: Number(envs.intents)
+    token: envs.token
 }
 
 new vikala(config).start()

@@ -58,7 +58,7 @@ interface BotOptions {
     owner?: string
     defaultPrefix?: string
     token: string
-    intents: number | BitFieldResolvable<any, any>
+    intents?: number | BitFieldResolvable<any, any>
 }
 
 export default class Vikala extends SapphireClient {
@@ -121,7 +121,7 @@ export default class Vikala extends SapphireClient {
             loadDefaultErrorListeners: true,
             loadSubcommandErrorListeners: true,
             loadApplicationCommandRegistriesStatusListeners: true,
-            hmr: { enabled: true }
+            hmr: { enabled: process.env.NODE_ENV === 'development' }
         })
 
         this.owner = config.owner

@@ -24,7 +24,7 @@ export default class Sheets {
     public async _init() {
         this.jwt = new JWT({ key: creds.private_key, email: creds.client_email, scopes: googleScopes })
 
-        this.doc = new GoogleSpreadsheet(envs.VHS_SHEET_ID, this.jwt)
+        this.doc = new GoogleSpreadsheet(envs.VHS_DOC_ID, this.jwt)
         await this.doc.loadInfo(true)
 
         this.vhsSheet = this.doc.sheetsByTitle['GAMES LIBRARY']
