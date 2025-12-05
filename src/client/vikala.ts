@@ -101,6 +101,7 @@ export default class Vikala extends SapphireClient {
                 IntentsBitField.Flags.GuildMessageReactions
             ],
             fetchPrefix: (m: Message) => this.settings.get(m.guild, 'prefix', config.defaultPrefix),
+            defaultPrefix: config.defaultPrefix,
             caseInsensitiveCommands: true,
             caseInsensitivePrefixes: true,
             baseUserDirectory: path.join(__dirname, '..'),
