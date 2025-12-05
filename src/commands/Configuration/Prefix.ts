@@ -33,7 +33,7 @@ export class Prefix extends Subcommand {
     public async prefixMsgSet(message: Message, args: Args) {
         if (!message.channel.isSendable()) return
 
-        const newPrefix: string = await args.restResult('string').then(res => res.isOk ? res.unwrap() : null)
+        const newPrefix: string = await args.restResult('string').then(res => res.isOk() ? res.unwrap() : null)
         if (!newPrefix) return message.channel.send({ content: 'Please provide a new prefix to set.' })
 
         return this.handleSetPrefix(message.guild, newPrefix, (content) => (message.channel as TextChannel).send(content))
@@ -46,7 +46,7 @@ export class Prefix extends Subcommand {
     }
 
     private handleGetPrefix(guild: any, sendFn: (content: any) => Promise<any>) {
-        const prefix = this.client.settings.get(guild, 'prefix', this.client.options.defaultPrefix)
+        const prefix = this.client.options.fetchPrefix(guild)
         return sendFn({ content: `The server's current prefix is \`${prefix}\`.` })
     }
 

@@ -58,7 +58,7 @@ interface BotOptions {
     owner?: string
     defaultPrefix?: string
     token: string
-    intents: number | BitFieldResolvable<any, any>
+    intents?: number | BitFieldResolvable<any, any>
 }
 
 export default class Vikala extends SapphireClient {
