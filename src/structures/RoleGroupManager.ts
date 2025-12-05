@@ -305,8 +305,7 @@ export default class RoleGroupManager {
         try {
             await this.handleRoleAssignment(member, result.group, result.groupRole)
             return true
-        } catch (error) {
-            console.error('Failed to assign role via reaction:', error)
+        } catch {
             return false
         }
     }
@@ -325,8 +324,7 @@ export default class RoleGroupManager {
         try {
             await this.handleRoleRemoval(member, result.group, result.groupRole)
             return true
-        } catch (error) {
-            console.error('Failed to remove role via reaction:', error)
+        } catch {
             return false
         }
     }
@@ -351,8 +349,8 @@ export default class RoleGroupManager {
                     await member.roles.remove(roleId, 'Temporary role expired')
                 }
                 await TemporaryRole.deleteOne({ guildId, userId, roleId })
-            } catch (error) {
-                console.error('Failed to remove expired temporary role:', error)
+            } catch {
+                // Failed to remove expired temporary role
             }
         }, duration)
     }

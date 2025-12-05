@@ -105,8 +105,7 @@ export class RoleMenuCommand extends Subcommand {
                         const updatedRole = groupRoles.find(gr => gr.roleId === roleId)
                         if (updatedRole?.emoji) await menuMessage.react(updatedRole.emoji)
                     }
-                } catch (error) {
-                    console.warn('Failed to add reaction to menu message:', error)
+                } catch {
                 }
             }
 
@@ -132,8 +131,7 @@ export class RoleMenuCommand extends Subcommand {
                                 await reaction.users.remove(this.client.user!)
                             }
                         }
-                    } catch (error) {
-                        console.warn('Failed to remove reaction from menu message:', error)
+                    } catch {
                     }
 
                     return message.channel.send(`✅ Removed emoji ${emoji} from the menu.`)
@@ -216,16 +214,14 @@ export class RoleMenuCommand extends Subcommand {
                 if (groupRole.emoji) {
                     try {
                         await menuMessage.react(groupRole.emoji)
-                    } catch (error) {
-                        console.warn(`Failed to add reaction ${groupRole.emoji}:`, error)
+                    } catch {
                     }
                 }
             }
 
             return message.channel.send(`✅ Refreshed role menu for **${groupName}** group.`)
 
-        } catch (error) {
-            console.error('Menu refresh error:', error)
+        } catch{
             return message.channel.send(`❌ Failed to refresh menu. The message may have been deleted.`)
         }
     }
@@ -271,8 +267,7 @@ export class RoleMenuCommand extends Subcommand {
             await this.client.roleGroups.updateMenuFlags(message.guild.id, menu.groupName, updates)
 
             return message.channel.send(`✅ Updated **${menu.groupName}** role menu settings:\n${statusMessages.join('\n')}`)
-        } catch (error) {
-            console.error('Flag update error:', error)
+        } catch {
             return message.channel.send('❌ Failed to update menu settings.')
         }
     }
@@ -373,8 +368,8 @@ export class RoleMenuCommand extends Subcommand {
                 if (groupRole.emoji) {
                     try {
                         await targetMessage.react(groupRole.emoji)
-                    } catch (error) {
-                        console.warn(`Failed to add reaction ${groupRole.emoji}:`, error)
+                    } catch {
+                        // Reaction failed, continue
                     }
                 }
             }
@@ -383,7 +378,6 @@ export class RoleMenuCommand extends Subcommand {
             return interaction.reply({ content: `✅ ${actionText} with role menu for **${groupName}** group.` })
 
         } catch (error: any) {
-            console.error('Role menu creation error:', error)
             if (error.code === 11000) {
                 return interaction.reply({ content: `❌ A role menu for group **${groupName}** already exists.`, ephemeral: true })
             }
@@ -452,8 +446,7 @@ export class RoleMenuCommand extends Subcommand {
             await this.client.roleGroups.updateMenuFlags(interaction.guild.id, menu.groupName, updates)
 
             return interaction.reply({ content: `✅ Updated **${menu.groupName}** role menu settings:\n${statusMessages.join('\n')}` })
-        } catch (error) {
-            console.error('Flag update error:', error)
+        } catch {
             return interaction.reply({ content: '❌ Failed to update menu settings.', ephemeral: true })
         }
     }

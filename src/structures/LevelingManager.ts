@@ -203,8 +203,8 @@ export default class LevelingManager {
 
             try {
                 await member.roles.add(role)
-            } catch (error) {
-                console.error(`Failed to add role ${role.name} to ${member.user.tag}:`, error)
+            } catch {
+                // Failed to add level role
             }
         }
     }
@@ -225,8 +225,8 @@ export default class LevelingManager {
 
         try {
             await levelUpChannel.send(message)
-        } catch (error) {
-            console.error('Failed to send level up message:', error)
+        } catch {
+            // Failed to send level up message
         }
     }
 

@@ -121,7 +121,7 @@ export default class Vikala extends SapphireClient {
             loadDefaultErrorListeners: true,
             loadSubcommandErrorListeners: true,
             loadApplicationCommandRegistriesStatusListeners: true,
-            hmr: { enabled: true }
+            hmr: { enabled: process.env.NODE_ENV === 'development' }
         })
 
         this.owner = config.owner

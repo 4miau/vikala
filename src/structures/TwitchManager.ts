@@ -21,10 +21,10 @@ export default class TwitchManager {
         try {
             await this.manageTokens()
 
-            setInterval(() => this.isLive().catch(console.error), ms('5m'))
-            setInterval(() => this.isNotLive().catch(console.error), ms('10m'))
-            setInterval(() => this.manageTokens().catch(console.error), ms('1h'))
-            setInterval(() => this.updateAllStreamers().catch(console.error), ms('1d'))
+            setInterval(() => this.isLive().catch(() => {}), ms('5m'))
+            setInterval(() => this.isNotLive().catch(() => {}), ms('10m'))
+            setInterval(() => this.manageTokens().catch(() => {}), ms('1h'))
+            setInterval(() => this.updateAllStreamers().catch(() => {}), ms('1d'))
         } catch (err) {
             throw new Error(`Failed to initialize Twitch Manager: ${err}`)
         }
@@ -46,7 +46,7 @@ export default class TwitchManager {
             this.accessToken = response.access_token
 
             if (this.tokenTimeout) clearTimeout(this.tokenTimeout)
-            this.tokenTimeout = setTimeout(() => this.manageTokens().catch(this.client.logger.error), ms('1h'))
+            this.tokenTimeout = setTimeout(() => this.manageTokens(), ms('1h'))
         } catch (error) {
             throw new Error(`Failed to refresh Twitch access token: ${error}`)
         }
@@ -96,8 +96,7 @@ export default class TwitchManager {
             const request = this.createApiRequest('games', { id: gameId })
             const response = await this.client.api.set(request).call()
             return response.data[0] || null
-        } catch (error) {
-            console.error(`Failed to get game '${gameId}': ${error}`)
+        } catch {
             return null
         }
     }
@@ -200,15 +199,15 @@ export default class TwitchManager {
                             } else if (streamer.name !== userData.login) {
                                 streamer.name = userData.login
                             }
-                        } catch (error) {
-                            console.error(`Failed to update streamer ${streamer.name}:`, error)
+                        } catch {
+                            // Failed to update streamer
                         }
                     }))
                 }
 
                 this.client.settings.set(guild, 'streamers', streamers)
-            } catch (error) {
-                console.error(`Failed to update streamers for guild ${guild.id}:`, error)
+            } catch {
+                // Failed to update streamers for guild
             }
         }
     }
@@ -250,8 +249,8 @@ export default class TwitchManager {
                     }
 
                     this.modifyStreamer(streamer.name, guild, updateData)
-                } catch (error) {
-                    console.error(`Error posting live notification for ${streamer.name}:`, error)
+                } catch {
+                    // Error posting live notification
                 }
             }
         }
@@ -302,8 +301,7 @@ export default class TwitchManager {
                     })
 
                     this.modifyStreamer(streamer.name, guild, { posted: false })
-                } catch (error) {
-                    console.error(`Error updating offline status for ${streamer.name}:`, error)
+                } catch {
                     this.modifyStreamer(streamer.name, guild, { posted: false })
                 }
             }

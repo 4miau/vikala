@@ -75,7 +75,6 @@ export default class Queue {
             const result = await Promise.resolve(queueItem.task())
             queueItem.resolve(result)
         } catch (error) {
-            this.client.logger.error('QUEUE_TASK_ERROR', error)
             queueItem.reject(error)
         }
 

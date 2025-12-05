@@ -123,11 +123,7 @@ export default class AutomodManager {
             } else {
                 await this.warnUser(member, rule, violation, newWarnings)
             }
-
-            this.client.logger.info(`Automod violation: ${member.user.tag} - ${rule.type} - ${violation.reason}`)
-
-        } catch (error) {
-            this.client.logger.error('Failed to handle automod violation:', error)
+        } catch {
         }
     }
 

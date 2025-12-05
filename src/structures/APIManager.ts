@@ -21,7 +21,6 @@ export class APIManager {
                 this.reset()
                 return response.data
             } catch (error) {
-                this.client.logger.error('ERROR', error)
                 throw error
             }
         })
@@ -34,7 +33,6 @@ export class APIManager {
             this.reset()
             return response.data
         } catch (error) {
-            this.client.logger.error('ERROR', error)
             throw error
         }
     }

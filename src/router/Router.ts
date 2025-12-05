@@ -14,9 +14,7 @@ export default class Router {
     }
 
     routes() {
-        this.app.listen(envs.port, () => {
-            console.log(`Server is running on port ${envs.port}`)
-        })
+        this.app.listen(envs.port)
 
         this.app.get('/', (_, res) => {
             res.send('Vikky is running!')
