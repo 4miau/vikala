@@ -83,6 +83,8 @@ export class Help extends Command {
         const message = await sendFn({ embeds: [embed], components: [row] })
 
         if (totalPages > 1) this.setupPaginationCollector(message, categoryCommands, totalPages, category)
+
+        return message
     }
 
     private async sendAllCommandsHelp(userId: string, sendFn: (content: any) => Promise<any>) {
@@ -109,7 +111,7 @@ export class Help extends Command {
                     `Reading the bot signature is pretty simple.\n\n` +
                     `**<argument>**\nThis means the argument is __required__.\n\n` +
                     `**[argument]**\nThis means the argument is __optional__.\n\n` +
-                    `**[--argument]**\nThis means the argument is a __flag__ or __option__ and needs the -- prefix. If there's an =" then it requires a value.\n\n` +
+                    `**[--argument]**\nThis means the argument is a __flag__ or __option__ and needs the -- prefix. If there's an "=" then it requires a value.\n\n` +
                     `**[A|B]**\nThis means the argument can be either __A or B__\n\n` +
                     `**[argument...]**\nThis means you can have multiple arguments.\n\n` +
                     `**NOTES:** __Do not type the brackets! Also use "" around options to provide more than 1 word!__`

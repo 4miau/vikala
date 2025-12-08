@@ -304,7 +304,6 @@ export class RoleMenuCommand extends Subcommand {
         return message.channel.send({ embeds: [embed] })
     }
 
-    // Slash command implementations
     public async chatInputCreate(interaction: Subcommand.ChatInputCommandInteraction) {
         if (!interaction.guild) return
 

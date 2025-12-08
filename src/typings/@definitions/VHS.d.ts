@@ -24,6 +24,7 @@ declare namespace VHS {
 
     export interface LibraryGameEntry {
         name: string
+        url: string | null
         summary: string
         releaseDate: string
         seen: boolean
@@ -36,6 +37,7 @@ declare namespace VHS {
 
     export interface ArchiveGameEntry {
         name: string
+        url: string | null
         summary: string
         releaseDate: string
         liked: boolean

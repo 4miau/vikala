@@ -156,7 +156,6 @@ export class CasesCommand extends Subcommand {
         const user = await args.pickResult('user').then(res => res.isOk() ? res.unwrap() : null)
         if (!user) return message.channel.send('❌ Please mention a valid user.\nExample: `cases user @member`')
 
-        // Get both moderation cases and event logs for the user
         const [modCases, eventLogs] = await Promise.all([
             this.client.cases.getCasesByUser(message.guild, user.id, 15),
             this.client.events.getEventLogsByUser(message.guild, user.id, 15)
@@ -409,7 +408,6 @@ export class CasesCommand extends Subcommand {
                 const currentEmbed = await message.fetch().then((msg: any) => msg.embeds[0])
                 await message.edit({ embeds: [currentEmbed], components: [disabledRow] })
             } catch {
-                // Ignore errors when disabling buttons
             }
         })
     }

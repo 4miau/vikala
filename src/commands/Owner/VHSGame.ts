@@ -189,33 +189,22 @@ export class VHSGame extends Subcommand {
 
                 const options = this.buildGameSelectionMessage(games, sheetTitle)
 
-                if (context.isInteraction) {
-                    if ('edit' in loadingMsg) await loadingMsg.edit({ content: options })
-                    else await context.sendMessage({ content: options })
-                    const selection = await getInput(context.channel, { userId: context.userId, deleteAfter: true })
-                    const selectedIndex = Number(selection)
+                if ('edit' in loadingMsg) await loadingMsg.edit({ content: options })
+                else await context.sendMessage({ content: options })
 
-                    if (isNaN(selectedIndex) || selectedIndex < 1 || selectedIndex > games.length) {
-                        return context.sendMessage({ content: 'Invalid selection. Please try again.' })
-                    }
+                const selection = await getInput(context.channel, {
+                    userId: context.userId,
+                    deleteAfter: context.isInteraction
+                })
+                const selectedIndex = Number(selection[0])
 
-                    const selectedGame = games[selectedIndex - 1]
-                    const embed = this.buildGameEmbed(selectedGame.data, sheetTitle, selectedGame.rowIndex)
-                    return context.sendMessage({ embeds: [embed] })
-                } else {
-                    if ('edit' in loadingMsg) await loadingMsg.edit({ content: options })
-                    else await context.sendMessage({ content: options })
-                    const selection = await getInput(context.channel, { userId: context.userId })
-                    const selectedIndex = Number(selection)
-
-                    if (isNaN(selectedIndex) || selectedIndex < 1 || selectedIndex > games.length) {
-                        return context.sendMessage({ content: 'Invalid selection. Please try again.' })
-                    }
-
-                    const selectedGame = games[selectedIndex - 1]
-                    const embed = this.buildGameEmbed(selectedGame.data, sheetTitle, selectedGame.rowIndex)
-                    return context.sendMessage({ embeds: [embed] })
+                if (isNaN(selectedIndex) || selectedIndex < 1 || selectedIndex > games.length) {
+                    return context.sendMessage({ content: 'Invalid selection. Please try again.' })
                 }
+
+                const selectedGame = games[selectedIndex - 1]
+                const embed = this.buildGameEmbed(selectedGame.data, sheetTitle, selectedGame.rowIndex)
+                return context.sendMessage({ embeds: [embed] })
             }
         } catch (err) {
             console.error('Error in handleGameView:', err)
@@ -245,26 +234,21 @@ export class VHSGame extends Subcommand {
             if ('edit' in loadingMsg) await loadingMsg.edit({ content: confirmMessage })
             else await context.sendMessage({ content: confirmMessage })
 
-            const confirmation = context.isInteraction
-                ? await getInput(context.channel, { userId: context.userId, deleteAfter: true })
-                : await getInput(context.channel, { userId: context.userId })
+            const confirmation = await getInput(context.channel, {
+                userId: context.userId,
+                deleteAfter: context.isInteraction
+            })
 
-            const confirmText = Array.isArray(confirmation) ? confirmation.join(' ') : confirmation
-            if (confirmText.toLowerCase() !== 'yes') {
-                return context.sendMessage({ content: 'Transfer cancelled.' })
-            }
+            const confirmText = confirmation.join(' ')
+            if (confirmText.toLowerCase() !== 'yes') return context.sendMessage({ content: 'Transfer cancelled.' })
 
             const transferMsg = await context.sendMessage({ content: '🔄 Transferring game...' })
-            if (sourceSheet === 'GAMES LIBRARY') {
-                await this.client.sheets.transferGameToArchive(game.data, game.rowIndex)
-            } else {
-                await this.client.sheets.transferGameToLibrary(game.data, game.rowIndex)
-            }
+            if (sourceSheet === 'GAMES LIBRARY') await this.client.sheets.transferGameToArchive(game.data, game.rowIndex)
+            else await this.client.sheets.transferGameToLibrary(game.data, game.rowIndex)
 
             if ('edit' in transferMsg) return transferMsg.edit({ content: `✅ Successfully transferred **${game.data.name}** to ${targetSheet}.` })
             return context.sendMessage({ content: `✅ Successfully transferred **${game.data.name}** to ${targetSheet}.` })
-        } catch (err) {
-            console.error('Error in handleGameTransfer:', err)
+        } catch {
             if ('edit' in loadingMsg) return loadingMsg.edit({ content: 'An error occurred while transferring the game. Please try again.' })
             return context.sendMessage({ content: 'An error occurred while transferring the game. Please try again.' })
         }

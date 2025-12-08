@@ -6,6 +6,7 @@ import { codeBlock, isThenable } from '@sapphire/utilities'
 import { Stopwatch } from '@sapphire/stopwatch'
 import { inspect } from 'node:util'
 import { send } from '@sapphire/plugin-editable-commands'
+import ms from 'ms'
 
 interface EvalResult {
     success: boolean
@@ -33,7 +34,7 @@ interface EvalResult {
 })
 export class Eval extends Command {
     client = this.container.client
-    private static readonly DEFAULT_TIMEOUT = 60000 // 60 seconds
+    private static readonly DEFAULT_TIMEOUT = ms('60s')
     private static readonly MAX_OUTPUT_LENGTH = 2000
 
     private cachedContext: object | null = null
@@ -404,8 +405,8 @@ export class Eval extends Command {
                         .setName('timeout')
                         .setDescription('Timeout in milliseconds (default: 60000)')
                         .setRequired(false)
-                        .setMinValue(1000)
-                        .setMaxValue(300000)
+                        .setMinValue(ms('1s'))
+                        .setMaxValue(ms('5m'))
                 )
                 .addIntegerOption((option) =>
                     option
