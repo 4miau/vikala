@@ -44,6 +44,8 @@ export const AUTOMOD_REGEX = {
 export const steamApi: string = 'https://store.steampowered.com/api/appdetails?appids='
 export const ggDealsApi: string = 'http://api.gg.deals/v1/prices/by-steam-app-id/'
 export const rawgApi: string = 'https://api.rawg.io/api'
+export const gogCatalogApi: string = 'https://catalog.gog.com/v1/catalog'
+export const gogProductsApi: string = 'https://api.gog.com/products/'
 
 // GOOGLE API
 export const googleScopes: string[] = ['https://www.googleapis.com/auth/spreadsheets']

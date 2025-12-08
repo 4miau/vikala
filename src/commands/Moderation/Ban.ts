@@ -8,13 +8,14 @@ import { getInput, yes } from '../../lib/util/utilities'
     name: 'ban',
     aliases: ['bean'],
     description: 'Bans a user from the server. (Use help for more info)',
-    detailedDescription: 'Bans a user from the server.\nAvailable flags:\n- `--s` or `--skip` will prevent the bot from asking for confirmation.',
-    usage: 'ban <member> [reason] [--s]',
+    detailedDescription: 'Bans a user from the server.\nAvailable flags:\n- `--skip` or `--s` for short will prevent the bot from asking for confirmation.',
+    usage: 'ban <member...> [--reason=|--r=] [--s]',
     examples: [
-        { example: 'ban @User#0001 Spamming', description: 'Bans the user @User#0001 for spamming.' },
+        { example: 'ban @User#0001 --reason=Spamming', description: 'Bans the user @User#0001 for spamming.' },
         { example: 'ban @User#0001 --s', description: 'Bans the user @User#0001 without asking for confirmation.' },
         { example: 'ban @User#0001', description: 'Bans the user @User#0001 with no specified reason.' },
-        { example: 'ban 1234567890 Spamming --skip', description: 'Bans the user with ID 1234567890 for spamming and without asking for confirmation.' }
+        { example: 'ban 1234567890 --reason=Spamming --skip', description: 'Bans the user with ID 1234567890 for spamming and without asking for confirmation.' },
+        { example: 'ban @Apple @Banana @Cherry "--reason=Fruits are not allowed"', description: 'Bans multiple users (@Apple, @Banana, and @Cherry) with a single command for the reason "Fruits are not allowed".' }
     ],
     options: ['reason', 'r'],
     flags: ['s', 'skip'],

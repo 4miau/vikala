@@ -4,7 +4,7 @@ import { ChannelType, type Message, type TextChannel } from 'discord.js'
 
 @ApplyOptions<Command.Options>({
     name: 'setvhschannel',
-    aliases: ['setvhs', 'vhs'],
+    aliases: ['setvhs'],
     description: 'Set the VHS channel',
     usage: 'setvhschannel <channel>',
     examples: [

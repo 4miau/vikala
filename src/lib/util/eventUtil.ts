@@ -1,35 +1,29 @@
 import { GuildChannel, Role, PermissionsBitField } from 'discord.js'
+import { arrayEmpty } from 'miau-utilities'
 
 export function compareRoleChanges(oldRole: Role, newRole: Role): string | null {
     const changes: string[] = []
 
-    // Check name change
-    if (oldRole.name !== newRole.name) {
-        changes.push(`• **Name:** \`${oldRole.name}\` → \`${newRole.name}\``)
-    }
+    if (oldRole.name !== newRole.name) changes.push(`• **Name:** \`${oldRole.name}\` → \`${newRole.name}\``)
 
-    // Check color change
     if (oldRole.color !== newRole.color) {
         const oldColor = oldRole.color === 0 ? 'Default' : `#${oldRole.color.toString(16).padStart(6, '0').toUpperCase()}`
         const newColor = newRole.color === 0 ? 'Default' : `#${newRole.color.toString(16).padStart(6, '0').toUpperCase()}`
         changes.push(`• **Color:** ${oldColor} → ${newColor}`)
     }
 
-    // Check mentionable change
     if (oldRole.mentionable !== newRole.mentionable) {
         const oldMentionable = oldRole.mentionable ? 'Yes' : 'No'
         const newMentionable = newRole.mentionable ? 'Yes' : 'No'
         changes.push(`• **Mentionable:** ${oldMentionable} → ${newMentionable}`)
     }
 
-    // Check hoist change
     if (oldRole.hoist !== newRole.hoist) {
         const oldHoist = oldRole.hoist ? 'Yes' : 'No'
         const newHoist = newRole.hoist ? 'Yes' : 'No'
         changes.push(`• **Display Separately:** ${oldHoist} → ${newHoist}`)
     }
 
-    // Check permission changes
     const oldPerms = oldRole.permissions.toArray()
     const newPerms = newRole.permissions.toArray()
 
@@ -46,9 +40,7 @@ export function compareRoleChanges(oldRole: Role, newRole: Role): string | null 
         changes.push(`• **Permissions Removed:** ${permNames}`)
     }
 
-    if (changes.length === 0) {
-        return null // No significant changes detected
-    }
+    if (arrayEmpty(changes)) return null
 
     return `**📝 Changes:**\n${changes.join('\n')}`
 }
@@ -56,25 +48,18 @@ export function compareRoleChanges(oldRole: Role, newRole: Role): string | null 
 export function compareChannelChanges(oldChannel: GuildChannel, newChannel: GuildChannel): string | null {
     const changes: string[] = []
 
-    // Check name change
-    if (oldChannel.name !== newChannel.name) {
-        changes.push(`• **Name:** \`${oldChannel.name}\` → \`${newChannel.name}\``)
-    }
+    if (oldChannel.name !== newChannel.name) changes.push(`• **Name:** \`${oldChannel.name}\` → \`${newChannel.name}\``)
 
-    // Check permission overwrites changes
     const oldOverwrites = oldChannel.permissionOverwrites.cache
     const newOverwrites = newChannel.permissionOverwrites.cache
 
-    // Find permission changes
     const permissionChanges: string[] = []
 
-    // Check for new overwrites
     newOverwrites.forEach((newOverwrite, id) => {
         const oldOverwrite = oldOverwrites.get(id)
-        const target = newOverwrite.type === 0 ? `<@&${id}>` : `<@${id}>` // Role or User
+        const target = newOverwrite.type === 0 ? `<@&${id}>` : `<@${id}>`
 
         if (!oldOverwrite) {
-            // New permission overwrite
             const allows = new PermissionsBitField(newOverwrite.allow).toArray()
             const denies = new PermissionsBitField(newOverwrite.deny).toArray()
 
@@ -87,7 +72,6 @@ export function compareChannelChanges(oldChannel: GuildChannel, newChannel: Guil
                 permissionChanges.push(`• ${target} denied: ${denyNames}`)
             }
         } else {
-            // Compare existing overwrites
             const oldAllow = new PermissionsBitField(oldOverwrite.allow).toArray()
             const newAllow = new PermissionsBitField(newOverwrite.allow).toArray()
             const oldDeny = new PermissionsBitField(oldOverwrite.deny).toArray()
@@ -117,7 +101,6 @@ export function compareChannelChanges(oldChannel: GuildChannel, newChannel: Guil
         }
     })
 
-    // Check for removed overwrites
     oldOverwrites.forEach((oldOverwrite, id) => {
         if (!newOverwrites.has(id)) {
             const target = oldOverwrite.type === 0 ? `<@&${id}>` : `<@${id}>`
@@ -129,9 +112,7 @@ export function compareChannelChanges(oldChannel: GuildChannel, newChannel: Guil
         changes.push(`**Permissions:**\n${permissionChanges.join('\n')}`)
     }
 
-    if (changes.length === 0) {
-        return null
-    }
+    if (arrayEmpty(changes)) return null
 
     return `**📝 Changes:**\n${changes.join('\n')}`
 }
@@ -145,7 +126,7 @@ export function compareMemberChanges(oldMember: import('discord.js').GuildMember
         changes.push(`**Nickname:** \`${oldNick}\` → \`${newNick}\``)
     }
 
-    if (changes.length === 0) return null
+    if (arrayEmpty(changes)) return null
 
     return `**📝 Changes:**\n${changes.join('\n')}`
 }
@@ -158,12 +139,12 @@ export function compareUserChanges(oldUser: import('discord.js').User, newUser: 
     }
 
     if (oldUser.avatar !== newUser.avatar) {
-        const oldAvatar = oldUser.avatar ? `[Avatar](${oldUser.displayAvatarURL()})` : 'No Avatar'
-        const newAvatar = newUser.avatar ? `[Avatar](${newUser.displayAvatarURL()})` : 'No Avatar'
+        const oldAvatar = oldUser.avatar ? `[Avatar](${oldUser.displayAvatarURL({ size: 256 })})` : 'No Avatar'
+        const newAvatar = newUser.avatar ? `[Avatar](${newUser.displayAvatarURL({ size: 256 })})` : 'No Avatar'
         changes.push(`**Avatar:** ${oldAvatar} → ${newAvatar}`)
     }
 
-    if (changes.length === 0) return null
+    if (arrayEmpty(changes)) return null
 
     return `**📝 Changes:**\n${changes.join('\n')}`
 }

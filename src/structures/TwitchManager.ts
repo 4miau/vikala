@@ -268,7 +268,7 @@ export default class TwitchManager {
 
                 try {
                     const stream = await this.getStream(streamer.name)
-                    if (stream) continue // Still live
+                    if (stream) continue
 
                     const vod = await this.getVOD(streamer)
                     if (!vod) {

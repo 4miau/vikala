@@ -23,8 +23,8 @@ export class AnimeQuote extends Command {
     public async messageRun(message: Message, args: Args) {
         if (!message.channel.isSendable()) return
 
-        const character = args.getOption('char', 'character') || undefined
-        const show = args.getOption('show') || undefined
+        const character = args.getOption('char', 'character') ?? undefined
+        const show = args.getOption('show') ?? undefined
 
         return this.handleAnimeQuote(character, show, (content) => (message.channel as TextChannel).send(content))
     }

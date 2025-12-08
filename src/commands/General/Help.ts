@@ -3,7 +3,7 @@ import { ApplyOptions } from '@sapphire/decorators'
 import { ActionRowBuilder, ButtonBuilder, EmbedBuilder, InteractionResponse, type Message, ButtonStyle, ComponentType, TextChannel } from 'discord.js'
 import ms from 'ms'
 
-import { omitBy, paginate } from 'miau-utilities'
+import { capitalize, omitBy, paginate } from 'miau-utilities'
 import { Colors } from '../../lib/util/Colors'
 
 @ApplyOptions<Command.Options>({
@@ -14,8 +14,10 @@ import { Colors } from '../../lib/util/Colors'
     usage: 'help [command]',
     examples: [
         { example: 'help', description: 'Displays a list of all commands.' },
-        { example: 'help ping', description: 'Displays detailed information about the "ping" command.' }
-    ]
+        { example: 'help ping', description: 'Displays detailed information about the "ping" command.' },
+        { example: 'help --category=Owner', description: 'Displays all commands in the Owner category.' }
+    ],
+    options: ['category', 'cat']
 })
 export class Help extends Command {
     client = this.container.client
@@ -33,31 +35,56 @@ export class Help extends Command {
     public async messageRun(message: Message, args: Args) {
         if (!message.channel.isSendable()) return
 
-        const cmdArgs = await args.restResult('string')
-        const commandName = cmdArgs.isOk() ? cmdArgs.unwrap() : null
+        const commandName = await args.restResult('string').then(res => res.isOk() ? res.unwrap() : null)
+        const category = args.getOptionResult('category', 'cat').isSome() ? capitalize(args.getOption('category', 'cat')) : null
 
-        return this.handleHelpRequest(commandName, message.author.id, (content) => (message.channel as TextChannel).send(content))
+        return this.handleHelpRequest(commandName, message.author.id, category, (content) => (message.channel as TextChannel).send(content))
     }
 
     public async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
         const commandName = interaction.options.getString('command')
+        const category = interaction.options.getString('category') ? capitalize(interaction.options.getString('category')) : null
 
-        return this.handleHelpRequest(commandName, interaction.user.id, (content) => interaction.reply(content))
+        return this.handleHelpRequest(commandName, interaction.user.id, category, (content) => interaction.reply(content))
     }
 
-    private async handleHelpRequest(commandName: string | null, userId: string, sendFn: (content: any) => Promise<any>) {
+    private async handleHelpRequest(commandName: string | null, userId: string, category: string | null, sendFn: (content: any) => Promise<any>) {
         if (commandName) return this.sendCommandHelp(commandName, sendFn)
+        if (category) return this.sendCategoryHelp(category, userId, sendFn)
         return this.sendAllCommandsHelp(userId, sendFn)
     }
 
     private async sendCommandHelp(commandName: string, sendFn: (content: any) => Promise<any>) {
         try {
             const cmd = this.client.commandStore.resolve(commandName)
-            const embed = this.buildCommandEmbed(cmd)
-            return sendFn({ embeds: [embed] })
+            const commandEmbed = this.buildCommandEmbed(cmd)
+            const helpEmbed = this.buildHelpGuideEmbed(cmd.name)
+            const row = this.createCommandHelpRow(1, 2)
+
+            const message = await sendFn({ embeds: [commandEmbed], components: [row] })
+            this.setupCommandHelpCollector(message, commandEmbed, helpEmbed)
+
+            return message
         } catch {
             return sendFn({ content: 'Command not found.', flags: ['Ephemeral'] })
         }
+    }
+
+    private async sendCategoryHelp(category: string, userId: string, sendFn: (content: any) => Promise<any>) {
+        const allCommands = this.getCommands(userId)
+        const categoryCommands = allCommands.filter(cmd => cmd.category?.toLowerCase() === category.toLowerCase())
+
+        if (categoryCommands.length === 0) return sendFn({ content: `Category "${category}" not found.`, flags: ['Ephemeral'] })
+
+        const [firstPageCommands, totalPages] = paginate(categoryCommands, 1, Help.COMMANDS_PER_PAGE)
+
+        const embed = this.buildCategoryCommandsEmbed(category, firstPageCommands)
+        const row = this.createPaginationRow(1, totalPages, false)
+        const message = await sendFn({ embeds: [embed], components: [row] })
+
+        if (totalPages > 1) this.setupPaginationCollector(message, categoryCommands, totalPages, category)
+
+        return message
     }
 
     private async sendAllCommandsHelp(userId: string, sendFn: (content: any) => Promise<any>) {
@@ -65,13 +92,31 @@ export class Help extends Command {
         const [firstPageCommands, totalPages] = paginate(commands, 1, Help.COMMANDS_PER_PAGE)
 
         const embed = this.buildAllCommandsEmbed(firstPageCommands)
-        const row = this.createPaginationRow(1, totalPages)
+        const row = this.createPaginationRow(1, totalPages, false)
 
         const message = await sendFn({ embeds: [embed], components: [row] })
 
         if (totalPages > 1) {
             this.setupPaginationCollector(message, commands, totalPages)
         }
+    }
+
+    private buildHelpGuideEmbed(commandName: string) {
+        return new EmbedBuilder()
+            .setTitle(`${commandName} Help`)
+            .setDescription(`Help for the ${commandName} command`)
+            .addFields({
+                name: '**How do I use this bot?**',
+                value:
+                    `Reading the bot signature is pretty simple.\n\n` +
+                    `**<argument>**\nThis means the argument is __required__.\n\n` +
+                    `**[argument]**\nThis means the argument is __optional__.\n\n` +
+                    `**[--argument]**\nThis means the argument is a __flag__ or __option__ and needs the -- prefix. If there's an "=" then it requires a value.\n\n` +
+                    `**[A|B]**\nThis means the argument can be either __A or B__\n\n` +
+                    `**[argument...]**\nThis means you can have multiple arguments.\n\n` +
+                    `**NOTES:** __Do not type the brackets! Also use "" around options to provide more than 1 word!__`
+            })
+            .setColor(Colors.Green)
     }
 
     private buildCommandEmbed(command: Command) {
@@ -83,6 +128,17 @@ export class Help extends Command {
         command.options?.examples?.forEach((ex) => {
             embed.addFields({ name: ex.example, value: ex.description })
         })
+
+        return embed
+    }
+
+    private buildCategoryCommandsEmbed(category: string, commands: Command[]) {
+        const embed = new EmbedBuilder()
+            .setTitle(`${category} Commands`)
+            .setDescription(`Commands in the **${category}** category`)
+            .setColor(Colors.Green)
+
+        commands.forEach((cmd) => { embed.addFields({ name: cmd.name, value: cmd.description }) })
 
         return embed
     }
@@ -102,7 +158,31 @@ export class Help extends Command {
         return embed
     }
 
-    private createPaginationRow(currentPage: number, totalPages: number): ActionRowBuilder<ButtonBuilder> {
+    private createCommandHelpRow(currentPage: number, totalPages: number): ActionRowBuilder<ButtonBuilder> {
+        const row = new ActionRowBuilder<ButtonBuilder>()
+
+        const buttons = [
+            new ButtonBuilder()
+                .setCustomId('cmd-help-prev')
+                .setLabel('Previous')
+                .setStyle(ButtonStyle.Secondary)
+                .setDisabled(currentPage === 1),
+            new ButtonBuilder()
+                .setCustomId('cmd-help-current')
+                .setLabel(`${currentPage}/${totalPages}`)
+                .setStyle(ButtonStyle.Primary)
+                .setDisabled(true),
+            new ButtonBuilder()
+                .setCustomId('cmd-help-next')
+                .setLabel('INFO/LAST')
+                .setStyle(ButtonStyle.Secondary)
+                .setDisabled(currentPage === totalPages)
+        ]
+
+        return row.addComponents(...buttons)
+    }
+
+    private createPaginationRow(currentPage: number, totalPages: number, isCommandSpecific: boolean = false): ActionRowBuilder<ButtonBuilder> {
         const row = new ActionRowBuilder<ButtonBuilder>()
 
         const buttons = [
@@ -128,7 +208,7 @@ export class Help extends Command {
                 .setDisabled(currentPage === totalPages),
             new ButtonBuilder()
                 .setCustomId('help-last')
-                .setLabel('Last')
+                .setLabel(isCommandSpecific ? 'INFO/LAST' : 'Last')
                 .setStyle(ButtonStyle.Secondary)
                 .setDisabled(currentPage === totalPages)
         ]
@@ -136,7 +216,43 @@ export class Help extends Command {
         return row.addComponents(...buttons)
     }
 
-    private setupPaginationCollector(message: Message, commands: Command[], totalPages: number) {
+    private setupCommandHelpCollector(message: Message | InteractionResponse, commandEmbed: EmbedBuilder, helpEmbed: EmbedBuilder) {
+        let currentPage = 1
+        const totalPages = 2
+
+        const collector = message.createMessageComponentCollector({
+            componentType: ComponentType.Button,
+            time: Help.COLLECTOR_TIME
+        })
+
+        collector.on('collect', async (interaction) => {
+            if (interaction.customId === 'cmd-help-prev') {
+                currentPage = 1
+            } else if (interaction.customId === 'cmd-help-next') {
+                currentPage = 2
+            } else {
+                return interaction.deferUpdate()
+            }
+
+            const embed = currentPage === 1 ? commandEmbed : helpEmbed
+            const row = this.createCommandHelpRow(currentPage, totalPages)
+
+            await interaction.update({ embeds: [embed], components: [row] })
+        })
+
+        collector.on('end', async () => {
+            try {
+                const disabledRow = this.createCommandHelpRow(currentPage, totalPages)
+                disabledRow.components.forEach(button => button.setDisabled(true))
+
+                const currentEmbed = await message.fetch().then((msg: any) => msg.embeds[0])
+                await message.edit({ embeds: [currentEmbed], components: [disabledRow] })
+            } catch {
+            }
+        })
+    }
+
+    private setupPaginationCollector(message: Message, commands: Command[], totalPages: number, category?: string) {
         let currentPage = 1
 
         const collector = message.createMessageComponentCollector({
@@ -150,15 +266,15 @@ export class Help extends Command {
 
             currentPage = newPage
             const [pageCommands] = paginate(commands, currentPage, Help.COMMANDS_PER_PAGE)
-            const embed = this.buildAllCommandsEmbed(pageCommands)
-            const row = this.createPaginationRow(currentPage, totalPages)
+            const embed = category ? this.buildCategoryCommandsEmbed(category, pageCommands) : this.buildAllCommandsEmbed(pageCommands)
+            const row = this.createPaginationRow(currentPage, totalPages, false)
 
             await interaction.update({ embeds: [embed], components: [row] })
         })
 
         collector.on('end', async () => {
             try {
-                const disabledRow = this.createPaginationRow(currentPage, totalPages)
+                const disabledRow = this.createPaginationRow(currentPage, totalPages, false)
                 disabledRow.components.forEach(button => button.setDisabled(true))
 
                 const currentEmbed = await message.fetch().then((msg: any) => msg.embeds[0])
@@ -187,6 +303,12 @@ export class Help extends Command {
                     option
                         .setName('command')
                         .setDescription('The command to get help for.')
+                        .setRequired(false)
+                )
+                .addStringOption((option) =>
+                    option
+                        .setName('category')
+                        .setDescription('The category to display commands from.')
                         .setRequired(false)
                 )
         )
