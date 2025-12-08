@@ -207,7 +207,6 @@ export class VHSGame extends Subcommand {
                 return context.sendMessage({ embeds: [embed] })
             }
         } catch (err) {
-            console.error('Error in handleGameView:', err)
             if ('edit' in loadingMsg) return loadingMsg.edit({ content: 'An error occurred while searching for games. Please try again.' })
             return context.sendMessage({ content: 'An error occurred while searching for games. Please try again.' })
         }

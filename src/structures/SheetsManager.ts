@@ -277,7 +277,7 @@ export default class Sheets {
         const updates = [
             { row: rowIndex, col: 1, value: gameData.summary },
             { row: rowIndex, col: 2, value: gameData.releaseDate },
-            { row: rowIndex, col: 3, value: gameData.seen === 'TRUE' || false },
+            { row: rowIndex, col: 3, value: gameData.seen === 'TRUE' },
             { row: rowIndex, col: 4, value: gameData.liked === 'TRUE' },
             { row: rowIndex, col: 5, value: gameData.meh === 'TRUE' },
             { row: rowIndex, col: 6, value: gameData.disliked === 'TRUE' },
