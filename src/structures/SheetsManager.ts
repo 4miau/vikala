@@ -7,7 +7,7 @@ import Vikala from '../client/vikala'
 import creds from '../keys/tien-476418-7db3e64f7a21.json'
 import { googleScopes } from '../lib/util/constants'
 import { envs } from '../lib/util/environmentVariables'
-import { fetchItchioDescription } from '../lib/util/utilities'
+import { fetchItchioDescription, normalizeUrl } from '../lib/util/utilities'
 
 
 export default class Sheets {
@@ -66,6 +66,8 @@ export default class Sheets {
 
     async addVHSEntry(gameLink: string) {
         return this.client.queue.add(async () => {
+            if (await this.isDuplicate(gameLink)) return
+
             const sheetIndex = await this.getSheetIndex()
 
             if (sheetIndex <= 1) return
@@ -74,6 +76,34 @@ export default class Sheets {
             else if (gameLink.includes('itch.io')) await this.addItchEntry(gameLink, sheetIndex)
             else if (gameLink.includes('gog.com')) await this.addGogEntry(gameLink, sheetIndex)
         })
+    }
+
+    private async isDuplicate(gameLink: string): Promise<boolean> {
+        const normalizedUrl = normalizeUrl(gameLink)
+
+        const librarySheet = this.sheets.get('GAMES LIBRARY')
+        const archiveSheet = this.sheets.get('GAMES ARCHIVE')
+
+        if (!librarySheet || !archiveSheet) return false
+
+        await this.resetCache(librarySheet)
+        await this.resetCache(archiveSheet)
+
+        const [libraryRows, archiveRows] = await Promise.all([
+            librarySheet.getRows(),
+            archiveSheet.getRows()
+        ])
+
+        for (const row of [...libraryRows, ...archiveRows]) {
+            const nameCell = librarySheet.getCell(row.rowNumber - 1, 0)
+            const existingUrl = nameCell.hyperlink
+
+            if (existingUrl && normalizeUrl(existingUrl) === normalizedUrl) {
+                return true
+            }
+        }
+
+        return false
     }
 
     private async addSteamEntry(gameLink: string, sheetIndex: number) {
@@ -272,7 +302,7 @@ export default class Sheets {
 
     private writeGameToLibraryRow(sheet: GoogleSpreadsheetWorksheet, rowIndex: number, gameData: any) {
         const nameCell = sheet.getCell(rowIndex, 0)
-        nameCell.formula = `=HYPERLINK("${gameData.url?.replace(/"/g, '""')}", "${gameData.name?.replace(/"/g, '""')}")` 
+        nameCell.formula = `=HYPERLINK("${gameData.url?.replace(/"/g, '""')}", "${gameData.name?.replace(/"/g, '""')}")`
 
         const updates = [
             { row: rowIndex, col: 1, value: gameData.summary },
@@ -293,7 +323,7 @@ export default class Sheets {
 
     private writeGameToArchiveRow(sheet: GoogleSpreadsheetWorksheet, rowIndex: number, gameData: any) {
         const nameCell = sheet.getCell(rowIndex, 0)
-        nameCell.formula = `=HYPERLINK("${gameData.url?.replace(/"/g, '""')}", "${gameData.name?.replace(/"/g, '""')}")` 
+        nameCell.formula = `=HYPERLINK("${gameData.url?.replace(/"/g, '""')}", "${gameData.name?.replace(/"/g, '""')}")`
 
         const updates = [
             { row: rowIndex, col: 1, value: gameData.summary },
