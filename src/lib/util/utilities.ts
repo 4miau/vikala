@@ -57,3 +57,13 @@ export async function fetchItchioDescription(data: string): Promise<string> {
         return 'Indie game available on itch.io'
     }
 }
+
+export function normalizeUrl(url: string): string {
+    return url
+        .toLowerCase()
+        .split('?')[0]
+        .split('#')[0]
+        .replace(/\/$/, '')
+        .replace(/^https?:\/\//, '')
+        .replace(/^www\./, '')
+}
