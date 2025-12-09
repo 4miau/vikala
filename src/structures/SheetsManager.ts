@@ -98,9 +98,7 @@ export default class Sheets {
             const nameCell = librarySheet.getCell(row.rowNumber - 1, 0)
             const existingUrl = nameCell.hyperlink
 
-            if (existingUrl && normalizeUrl(existingUrl) === normalizedUrl) {
-                return true
-            }
+            if (existingUrl && normalizeUrl(existingUrl) === normalizedUrl) return true
         }
 
         return false
