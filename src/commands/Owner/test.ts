@@ -49,6 +49,7 @@ export class Test extends Command {
             })
     }
 
+	// biome-ignore format
     public override registerApplicationCommands(registry: Command.Registry) {
         registry.registerChatInputCommand((builder) =>
             builder

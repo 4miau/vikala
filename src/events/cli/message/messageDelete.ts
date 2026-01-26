@@ -3,17 +3,20 @@ import { ApplyOptions } from '@sapphire/decorators'
 import { Events, Message } from 'discord.js'
 
 @ApplyOptions<Listener.Options>({
-    event: Events.MessageDelete
+	event: Events.MessageDelete
 })
 export class EventListener extends Listener {
-    client = this.container.client
+	client = this.container.client
 
-    public override async run(message: Message) {
-        if (message.partial) {
-            try { message = await message.fetch() }
-            catch { return }
-        }
+	public override async run(message: Message) {
+		if (message.partial) {
+			try {
+				message = await message.fetch()
+			} catch {
+				return
+			}
+		}
 
-        await this.client.events.deletedMessageLog(message)
-    }
+		await this.client.events.deletedMessageLog(message)
+	}
 }

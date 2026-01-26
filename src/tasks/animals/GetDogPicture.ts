@@ -6,15 +6,14 @@ import { dogApi } from '../../lib/util/constants'
 
 @ApplyOptions<Piece.Options>({ name: 'getdogpicture' })
 export class GetDogPicture extends Task {
-    client = this.container.client
+	client = this.container.client
 
-    async exec() {
-        const obj: any = {
-            method: 'GET',
-            url: dogApi
-        }
+	async exec() {
+		const obj: any = {
+			method: 'GET',
+			url: dogApi
+		}
 
-        return this.client.api.set(obj)
-            .call()
-    }
+		return this.client.api.set(obj).call()
+	}
 }

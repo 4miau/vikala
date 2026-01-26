@@ -6,7 +6,7 @@ import { ApplyOptions } from '@sapphire/decorators'
 	name: 'ping',
 	aliases: ['pong'],
 	description: 'Pong! 🏓',
-	detailedDescription: 'Checks the bot\'s latency to Discord and the API response time.',
+	detailedDescription: "Checks the bot's latency to Discord and the API response time.",
 	usage: 'ping'
 })
 export class Ping extends Command {
@@ -16,9 +16,7 @@ export class Ping extends Command {
 		if (!message.channel.isSendable()) return
 
 		const msg = await message.channel.send('Ping?')
-		const content = `Pong 🏓! Bot Latency ${Math.round(this.client.ws.ping)}ms. API Latency ${
-			msg.createdTimestamp - message.createdTimestamp
-		}ms.`
+		const content = `Pong 🏓! Bot Latency ${Math.round(this.client.ws.ping)}ms. API Latency ${msg.createdTimestamp - message.createdTimestamp}ms.`
 
 		return msg.edit(content)
 	}
@@ -32,6 +30,7 @@ export class Ping extends Command {
 		return interaction.editReply(content)
 	}
 
+	// biome-ignore format
 	public override registerApplicationCommands(registry: Command.Registry) {
 		registry.registerChatInputCommand((builder) =>
 			builder

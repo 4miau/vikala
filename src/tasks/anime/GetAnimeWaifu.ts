@@ -5,6 +5,5 @@ import Task from '../../lib/mods/Task'
 
 @ApplyOptions<Piece.Options>({ name: 'getanimewaifu' })
 export class GetAnimeWaifu extends Task {
-    async exec() {
-    }
+	async exec() {}
 }

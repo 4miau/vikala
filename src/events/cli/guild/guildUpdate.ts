@@ -3,12 +3,12 @@ import { ApplyOptions } from '@sapphire/decorators'
 import { Events, Guild } from 'discord.js'
 
 @ApplyOptions<Listener.Options>({
-    event: Events.GuildUpdate
+	event: Events.GuildUpdate
 })
 export class EventListener extends Listener {
-    client = this.container.client
+	client = this.container.client
 
-    public override async run(oldGuild: Guild, newGuild: Guild) {
-        await this.client.events.guildUpdatedLog(newGuild)
-    }
+	public override async run(oldGuild: Guild, newGuild: Guild) {
+		await this.client.events.guildUpdatedLog(newGuild)
+	}
 }

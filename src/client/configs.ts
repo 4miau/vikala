@@ -19,80 +19,88 @@ import AutomodManager from '../structures/AutomodManager'
 import RoleGroupManager from '../structures/RoleGroupManager'
 import HotReloadWatcher from '../structures/HotReloadWatcher'
 import HotReloadManager from '../structures/HotReloadManager'
+import ThreadManager from '../structures/ThreadManager'
+import ChannelSnapshotManager from '../structures/ChannelSnapshotManager'
 
 export default class Components {
-    client: Vikala
+	client: Vikala
 
-    public constructor(cli: Vikala) {
-        this.client = cli
-    }
+	public constructor(cli: Vikala) {
+		this.client = cli
+	}
 
-    async _loadAll() {
-        this._createStores()
-        await this._createStructs()
-    }
+	async _loadAll() {
+		this._createStores()
+		await this._createStructs()
+	}
 
-    private _createStores() {
-        this.client.stores.register(new TaskStore())
+	private _createStores() {
+		this.client.stores.register(new TaskStore())
 
-        this.client.stores.get('arguments').registerPath(path.join(__dirname, '..', 'arguments'))
-        this.client.stores.get('commands').registerPath(path.join(__dirname, '..', 'commands'))
-        this.client.stores.get('listeners').registerPath(path.join(__dirname, '..', 'events'))
-        this.client.stores.get('preconditions').registerPath(path.join(__dirname, '..', 'preconditions'))
-        this.client.stores.get('tasks').registerPath(path.join(__dirname, '..', 'tasks'))
+		this.client.stores.get('arguments').registerPath(path.join(__dirname, '..', 'arguments'))
+		this.client.stores.get('commands').registerPath(path.join(__dirname, '..', 'commands'))
+		this.client.stores.get('listeners').registerPath(path.join(__dirname, '..', 'events'))
+		this.client.stores.get('preconditions').registerPath(path.join(__dirname, '..', 'preconditions'))
+		this.client.stores.get('tasks').registerPath(path.join(__dirname, '..', 'tasks'))
 
-        this.client.commandStore = this.client.stores.get('commands')
-        this.client.listenerStore = this.client.stores.get('listeners')
-        this.client.tasks = this.client.stores.get('tasks')
-        this.client.arguments = this.client.stores.get('arguments')
-        this.client.preconditions = this.client.stores.get('preconditions')
-    }
+		this.client.commandStore = this.client.stores.get('commands')
+		this.client.listenerStore = this.client.stores.get('listeners')
+		this.client.tasks = this.client.stores.get('tasks')
+		this.client.arguments = this.client.stores.get('arguments')
+		this.client.preconditions = this.client.stores.get('preconditions')
+	}
 
-    private async _createStructs() {
-        const apiConfig = { method: 'GET', url: '', params: {}, headers: {} }
+	private async _createStructs() {
+		const apiConfig = { method: 'GET', url: '', params: {}, headers: {} }
 
-        this.client.cases = new ModLogger(this.client)
-        this.client.events = new EventLogger(this.client)
+		this.client.cases = new ModLogger(this.client)
+		this.client.events = new EventLogger(this.client)
 
-        this.client.queue = new Queue(this.client)
+		this.client.queue = new Queue(this.client)
 
-        this.client.api = new APIManager(this.client, apiConfig)
+		this.client.api = new APIManager(this.client, apiConfig)
 
-        this.client.settings = new SettingsProvider(Settings)
-        await this.client.settings._init()
+		this.client.settings = new SettingsProvider(Settings)
+		await this.client.settings._init()
 
-        this.client.twitch = new TwitchManager(this.client)
-        await this.client.twitch._init()
+		this.client.twitch = new TwitchManager(this.client)
+		await this.client.twitch._init()
 
-        this.client.router = new Router(this.client)
+		this.client.router = new Router(this.client)
 
-        this.client.sheets = new Sheets(this.client)
-        await this.client.sheets._init()
+		this.client.sheets = new Sheets(this.client)
+		await this.client.sheets._init()
 
-        this.client.presences = new PresenceManager(this.client)
-        await this.client.presences._init()
+		this.client.presences = new PresenceManager(this.client)
+		await this.client.presences._init()
 
-        this.client.leveling = new LevelingManager(this.client)
-        await this.client.leveling._init()
+		this.client.leveling = new LevelingManager(this.client)
+		await this.client.leveling._init()
 
-        this.client.welcome = new WelcomeManager(this.client)
-        await this.client.welcome._init()
+		this.client.welcome = new WelcomeManager(this.client)
+		await this.client.welcome._init()
 
-        this.client.autoroles = new AutoroleManager()
+		this.client.autoroles = new AutoroleManager()
 
-        this.client.automod = new AutomodManager(this.client)
+		this.client.automod = new AutomodManager(this.client)
 
-        this.client.roleGroups = new RoleGroupManager(this.client)
+		this.client.roleGroups = new RoleGroupManager(this.client)
 
-        this.client.hotReloadManager = new HotReloadManager(this.client)
-        this.client.hotReloadWatcher = new HotReloadWatcher(this.client)
+		this.client.threads = new ThreadManager(this.client)
+		await this.client.threads._init()
 
-        const nodeEnv = process.env.NODE_ENV?.replace(/['"]/g, '').toLowerCase()
-        if (nodeEnv !== 'production') {
-            this.client.logger.info(`🔧 Starting hot reload watcher (NODE_ENV: ${nodeEnv})`)
-            this.client.hotReloadWatcher.start()
-        } else {
-            this.client.logger.info(`🚫 Hot reload disabled in production (NODE_ENV: ${nodeEnv})`)
-        }
-    }
+		this.client.channelSnapshots = new ChannelSnapshotManager(this.client)
+		await this.client.channelSnapshots._init()
+
+		this.client.hotReloadManager = new HotReloadManager(this.client)
+		this.client.hotReloadWatcher = new HotReloadWatcher(this.client)
+
+		const nodeEnv = process.env.NODE_ENV?.replace(/['"]/g, '').toLowerCase()
+		if (nodeEnv !== 'production') {
+			this.client.logger.info(`🔧 Starting hot reload watcher (NODE_ENV: ${nodeEnv})`)
+			this.client.hotReloadWatcher.start()
+		} else {
+			this.client.logger.info(`🚫 Hot reload disabled in production (NODE_ENV: ${nodeEnv})`)
+		}
+	}
 }
