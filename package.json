@@ -28,9 +28,9 @@
 	},
 	"scripts": {
 		"dev": "bun --watch src/bot.ts",
-		"build": "bun build src/bot.ts --outdir dist --target node",
-		"start": "bun run dist/bot.js",
-		"watch": "bun --watch dist/bot.js",
+		"build": "tsc",
+		"start": "node dist/bot.js",
+		"watch": "node --watch dist/bot.js",
 		"lint": "bunx @biomejs/biome lint .",
 		"lint:fix": "bunx @biomejs/biome lint --write .",
 		"format": "bunx @biomejs/biome format .",
@@ -43,6 +43,7 @@
 		"@types/cheerio": "^0.22.35",
 		"@types/express": "^5.0.4",
 		"@types/ms": "^2.1.0",
-		"@types/node-emoji": "^1.8.2"
+		"@types/node-emoji": "^1.8.2",
+		"typescript": "^5.7.3"
 	}
 }
