@@ -3,28 +3,29 @@ import { ApplyOptions } from '@sapphire/decorators'
 import type { Message } from 'discord.js'
 
 @ApplyOptions<Command.Options>({
-    name: 'shutdown',
-    aliases: [],
-    description: 'Shuts down the bot safely.',
-    preconditions: ['OwnerOnly']
+	name: 'shutdown',
+	aliases: [],
+	description: 'Shuts down the bot safely.',
+	preconditions: ['OwnerOnly']
 })
 export class Shutdown extends Command {
-    client = this.container.client
+	client = this.container.client
 
-    public async messageRun(message: Message, args: Args) {
-        if (!message.channel.isSendable()) return
+	public async messageRun(message: Message, args: Args) {
+		if (!message.channel.isSendable()) return
 
-        return message.channel.send('Shutting down...').then(() => {
-            this.client.logger.fatal('Shutdown command issued, shutting down now.')
-            this.client.destroy()
-        })
-    }
+		return message.channel.send('Shutting down...').then(() => {
+			this.client.logger.fatal('Shutdown command issued, shutting down now.')
+			this.client.destroy()
+		})
+	}
 
-    public override registerApplicationCommands(registry: Command.Registry) {
-        registry.registerChatInputCommand((builder) =>
-            builder
-                .setName('shutdown')
-                .setDescription('Shuts down the bot safely.')
-        )
-    }
+	// biome-ignore format
+	public override registerApplicationCommands(registry: Command.Registry) {
+		registry.registerChatInputCommand((builder) =>
+			builder
+				.setName('shutdown')
+				.setDescription('Shuts down the bot safely.')
+		)
+	}
 }

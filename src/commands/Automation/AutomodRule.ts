@@ -10,498 +10,521 @@ import { AUTOMOD_RULE_TYPES, AUTOMOD_PUNISHMENTS, AUTOMOD_RULE_NAMES, AUTOMOD_RU
 import { arrayEmpty } from 'miau-utilities'
 
 @ApplyOptions<Subcommand.Options>({
-    name: 'automodrule',
-    aliases: ['amrule', 'rule'],
-    description: 'Manage automoderation rules',
-    detailedDescription: 'Configure individual automod rules including spam detection, invite blocking, caps limits, bad word filtering, and attachment spam prevention.',
-    examples: [
-        { example: 'rule enable spam', description: 'Enable spam detection rule.' },
-        { example: 'rule disable invites', description: 'Disable invite blocking rule.' },
-        { example: 'rule set spam punishment mute', description: 'Set spam punishment to mute.' },
-        { example: 'rule set caps threshold 70', description: 'Set caps threshold to 70%.' },
-        { example: 'rule set spam warnings 3', description: 'Require 3 warnings before punishment.' },
-        { example: 'rule set spam duration 1h', description: 'Set temp mute duration to 1 hour.' },
-        { example: 'rule info spam', description: 'View detailed info about spam rule.' },
-        { example: 'rule blacklist add bad_words word1 word2', description: 'Add words to bad words blacklist.' },
-        { example: 'rule blacklist remove bad_words word1', description: 'Remove word from blacklist.' },
-        { example: 'rule blacklist list bad_words', description: 'List all blacklisted words.' }
-    ],
-    requiredUserPermissions: ['ManageGuild'],
-    subcommands: [
-        { name: 'enable', chatInputRun: 'chatInputEnable', messageRun: 'messageEnable' },
-        { name: 'disable', chatInputRun: 'chatInputDisable', messageRun: 'messageDisable' },
-        { name: 'set', chatInputRun: 'chatInputSet', messageRun: 'messageSet' },
-        { name: 'blacklist', chatInputRun: 'chatInputBlacklist', messageRun: 'messageBlacklist' },
-        { name: 'info', chatInputRun: 'chatInputInfo', messageRun: 'messageInfo', default: true }
-    ]
+	name: 'automodrule',
+	aliases: ['amrule', 'rule'],
+	description: 'Manage automoderation rules',
+	detailedDescription:
+		'Configure individual automod rules including spam detection, invite blocking, caps limits, bad word filtering, and attachment spam prevention.',
+	examples: [
+		{ example: 'rule enable spam', description: 'Enable spam detection rule.' },
+		{ example: 'rule disable invites', description: 'Disable invite blocking rule.' },
+		{ example: 'rule set spam punishment mute', description: 'Set spam punishment to mute.' },
+		{ example: 'rule set caps threshold 70', description: 'Set caps threshold to 70%.' },
+		{ example: 'rule set spam warnings 3', description: 'Require 3 warnings before punishment.' },
+		{ example: 'rule set spam duration 1h', description: 'Set temp mute duration to 1 hour.' },
+		{ example: 'rule info spam', description: 'View detailed info about spam rule.' },
+		{ example: 'rule blacklist add bad_words word1 word2', description: 'Add words to bad words blacklist.' },
+		{ example: 'rule blacklist remove bad_words word1', description: 'Remove word from blacklist.' },
+		{ example: 'rule blacklist list bad_words', description: 'List all blacklisted words.' }
+	],
+	requiredUserPermissions: ['ManageGuild'],
+	subcommands: [
+		{ name: 'enable', chatInputRun: 'chatInputEnable', messageRun: 'messageEnable' },
+		{ name: 'disable', chatInputRun: 'chatInputDisable', messageRun: 'messageDisable' },
+		{ name: 'set', chatInputRun: 'chatInputSet', messageRun: 'messageSet' },
+		{ name: 'blacklist', chatInputRun: 'chatInputBlacklist', messageRun: 'messageBlacklist' },
+		{ name: 'info', chatInputRun: 'chatInputInfo', messageRun: 'messageInfo', default: true }
+	]
 })
 export class AutomodRuleCommand extends Subcommand {
-    client = this.container.client
+	client = this.container.client
 
-    private readonly RULE_TYPES = AUTOMOD_RULE_TYPES
-    private readonly PUNISHMENTS = AUTOMOD_PUNISHMENTS
+	private readonly RULE_TYPES = AUTOMOD_RULE_TYPES
+	private readonly PUNISHMENTS = AUTOMOD_PUNISHMENTS
 
-    public async messageEnable(message: Message, args: Args) {
-        if (!message.guild || !message.channel.isSendable()) return
+	public async messageEnable(message: Message, args: Args) {
+		if (!message.guild || !message.channel.isSendable()) return
 
-        const ruleType = await args.pickResult('string')
-        if (!ruleType.ok) {
-            return message.channel.send(`❌ Usage: \`rule enable <${this.RULE_TYPES.join('|')}>\``)
-        }
+		const ruleType = await args.pickResult('string')
+		if (!ruleType.ok) {
+			return message.channel.send(`❌ Usage: \`rule enable <${this.RULE_TYPES.join('|')}>\``)
+		}
 
-        const type = ruleType.unwrap().toLowerCase()
-        if (!this.RULE_TYPES.includes(type)) {
-            return message.channel.send(`❌ Invalid rule type. Valid types: ${this.RULE_TYPES.join(', ')}`)
-        }
+		const type = ruleType.unwrap().toLowerCase()
+		if (!this.RULE_TYPES.includes(type)) {
+			return message.channel.send(`❌ Invalid rule type. Valid types: ${this.RULE_TYPES.join(', ')}`)
+		}
 
-        const rule = await AutomodRule.findOne({ guildId: message.guild.id, type })
-        if (!rule) {
-            return message.channel.send('❌ Rule not found. Automod may not be initialized. Use `automod enable` first.')
-        }
+		const rule = await AutomodRule.findOne({ guildId: message.guild.id, type })
+		if (!rule) {
+			return message.channel.send('❌ Rule not found. Automod may not be initialized. Use `automod enable` first.')
+		}
 
-        if (rule.enabled) {
-            return message.channel.send(`⚠️ The **${AUTOMOD_RULE_NAMES[type] || type}** rule is already enabled.`)
-        }
+		if (rule.enabled) {
+			return message.channel.send(`⚠️ The **${AUTOMOD_RULE_NAMES[type] || type}** rule is already enabled.`)
+		}
 
-        rule.enabled = true
-        await rule.save()
+		rule.enabled = true
+		await rule.save()
 
-        return message.channel.send(`✅ Enabled **${AUTOMOD_RULE_NAMES[type] || type}** rule.`)
-    }
+		return message.channel.send(`✅ Enabled **${AUTOMOD_RULE_NAMES[type] || type}** rule.`)
+	}
 
-    public async chatInputEnable(interaction: Subcommand.ChatInputCommandInteraction) {
-        if (!interaction.guild) return
+	public async chatInputEnable(interaction: Subcommand.ChatInputCommandInteraction) {
+		if (!interaction.guild) return
 
-        const type = interaction.options.getString('type', true)
+		const type = interaction.options.getString('type', true)
 
-        const rule = await AutomodRule.findOne({ guildId: interaction.guild.id, type })
-        if (!rule) {
-            return interaction.reply({ content: '❌ Rule not found. Automod may not be initialized. Use `/automod enable` first.', flags: ['Ephemeral'] })
-        }
+		const rule = await AutomodRule.findOne({ guildId: interaction.guild.id, type })
+		if (!rule) {
+			return interaction.reply({ content: '❌ Rule not found. Automod may not be initialized. Use `/automod enable` first.', flags: ['Ephemeral'] })
+		}
 
-        if (rule.enabled) {
-            return interaction.reply({ content: `⚠️ The **${AUTOMOD_RULE_NAMES[type] || type}** rule is already enabled.`, flags: ['Ephemeral'] })
-        }
+		if (rule.enabled) {
+			return interaction.reply({ content: `⚠️ The **${AUTOMOD_RULE_NAMES[type] || type}** rule is already enabled.`, flags: ['Ephemeral'] })
+		}
 
-        rule.enabled = true
-        await rule.save()
+		rule.enabled = true
+		await rule.save()
 
-        return interaction.reply(`✅ Enabled **${AUTOMOD_RULE_NAMES[type] || type}** rule.`)
-    }
+		return interaction.reply(`✅ Enabled **${AUTOMOD_RULE_NAMES[type] || type}** rule.`)
+	}
 
-    public async messageDisable(message: Message, args: Args) {
-        if (!message.guild || !message.channel.isSendable()) return
+	public async messageDisable(message: Message, args: Args) {
+		if (!message.guild || !message.channel.isSendable()) return
 
-        const ruleType = await args.pickResult('string')
-        if (!ruleType.ok) {
-            return message.channel.send(`❌ Usage: \`rule disable <${this.RULE_TYPES.join('|')}>\``)
-        }
+		const ruleType = await args.pickResult('string')
+		if (!ruleType.ok) {
+			return message.channel.send(`❌ Usage: \`rule disable <${this.RULE_TYPES.join('|')}>\``)
+		}
 
-        const type = ruleType.unwrap().toLowerCase()
-        if (!this.RULE_TYPES.includes(type)) {
-            return message.channel.send(`❌ Invalid rule type. Valid types: ${this.RULE_TYPES.join(', ')}`)
-        }
+		const type = ruleType.unwrap().toLowerCase()
+		if (!this.RULE_TYPES.includes(type)) {
+			return message.channel.send(`❌ Invalid rule type. Valid types: ${this.RULE_TYPES.join(', ')}`)
+		}
 
-        const rule = await AutomodRule.findOne({ guildId: message.guild.id, type })
-        if (!rule) {
-            return message.channel.send('❌ Rule not found.')
-        }
+		const rule = await AutomodRule.findOne({ guildId: message.guild.id, type })
+		if (!rule) {
+			return message.channel.send('❌ Rule not found.')
+		}
 
-        if (!rule.enabled) {
-            return message.channel.send(`⚠️ The **${AUTOMOD_RULE_NAMES[type] || type}** rule is already disabled.`)
-        }
+		if (!rule.enabled) {
+			return message.channel.send(`⚠️ The **${AUTOMOD_RULE_NAMES[type] || type}** rule is already disabled.`)
+		}
 
-        rule.enabled = false
-        await rule.save()
+		rule.enabled = false
+		await rule.save()
 
-        return message.channel.send(`✅ Disabled **${AUTOMOD_RULE_NAMES[type] || type}** rule.`)
-    }
+		return message.channel.send(`✅ Disabled **${AUTOMOD_RULE_NAMES[type] || type}** rule.`)
+	}
 
-    public async chatInputDisable(interaction: Subcommand.ChatInputCommandInteraction) {
-        if (!interaction.guild) return
+	public async chatInputDisable(interaction: Subcommand.ChatInputCommandInteraction) {
+		if (!interaction.guild) return
 
-        const type = interaction.options.getString('type', true)
+		const type = interaction.options.getString('type', true)
 
-        const rule = await AutomodRule.findOne({ guildId: interaction.guild.id, type })
-        if (!rule) {
-            return interaction.reply({ content: '❌ Rule not found.', flags: ['Ephemeral'] })
-        }
+		const rule = await AutomodRule.findOne({ guildId: interaction.guild.id, type })
+		if (!rule) {
+			return interaction.reply({ content: '❌ Rule not found.', flags: ['Ephemeral'] })
+		}
 
-        if (!rule.enabled) {
-            return interaction.reply({ content: `⚠️ The **${AUTOMOD_RULE_NAMES[type] || type}** rule is already disabled.`, flags: ['Ephemeral'] })
-        }
+		if (!rule.enabled) {
+			return interaction.reply({ content: `⚠️ The **${AUTOMOD_RULE_NAMES[type] || type}** rule is already disabled.`, flags: ['Ephemeral'] })
+		}
 
-        rule.enabled = false
-        await rule.save()
+		rule.enabled = false
+		await rule.save()
 
-        return interaction.reply(`✅ Disabled **${AUTOMOD_RULE_NAMES[type] || type}** rule.`)
-    }
+		return interaction.reply(`✅ Disabled **${AUTOMOD_RULE_NAMES[type] || type}** rule.`)
+	}
 
-    public async messageSet(message: Message, args: Args) {
-        if (!message.guild || !message.channel.isSendable()) return
+	public async messageSet(message: Message, args: Args) {
+		if (!message.guild || !message.channel.isSendable()) return
 
-        const ruleType = await args.pickResult('string')
-        const property = await args.pickResult('string')
-        const value = await args.restResult('string')
+		const ruleType = await args.pickResult('string')
+		const property = await args.pickResult('string')
+		const value = await args.restResult('string')
 
-        if (!ruleType.ok || !property.ok || !value.ok) {
-            return message.channel.send('❌ Usage: `rule set <type> <property> <value>`\nProperties: `punishment`, `threshold`, `warnings`, `duration`')
-        }
+		if (!ruleType.ok || !property.ok || !value.ok) {
+			return message.channel.send('❌ Usage: `rule set <type> <property> <value>`\nProperties: `punishment`, `threshold`, `warnings`, `duration`')
+		}
 
-        const type = ruleType.unwrap().toLowerCase()
-        const prop = property.unwrap().toLowerCase()
-        const val = value.unwrap()
+		const type = ruleType.unwrap().toLowerCase()
+		const prop = property.unwrap().toLowerCase()
+		const val = value.unwrap()
 
-        if (!this.RULE_TYPES.includes(type)) {
-            return message.channel.send(`❌ Invalid rule type. Valid types: ${this.RULE_TYPES.join(', ')}`)
-        }
+		if (!this.RULE_TYPES.includes(type)) {
+			return message.channel.send(`❌ Invalid rule type. Valid types: ${this.RULE_TYPES.join(', ')}`)
+		}
 
-        const rule = await AutomodRule.findOne({ guildId: message.guild.id, type })
-        if (!rule) {
-            return message.channel.send('❌ Rule not found.')
-        }
+		const rule = await AutomodRule.findOne({ guildId: message.guild.id, type })
+		if (!rule) {
+			return message.channel.send('❌ Rule not found.')
+		}
 
-        const result = await this.updateRuleProperty(rule, prop, val)
-        if (!result.success) {
-            return message.channel.send(`❌ ${result.error}`)
-        }
+		const result = await this.updateRuleProperty(rule, prop, val)
+		if (!result.success) {
+			return message.channel.send(`❌ ${result.error}`)
+		}
 
-        return message.channel.send(`✅ Updated **${AUTOMOD_RULE_NAMES[type] || type}** rule: ${result.message}`)
-    }
+		return message.channel.send(`✅ Updated **${AUTOMOD_RULE_NAMES[type] || type}** rule: ${result.message}`)
+	}
 
-    public async chatInputSet(interaction: Subcommand.ChatInputCommandInteraction) {
-        if (!interaction.guild) return
-
-        const type = interaction.options.getString('type', true)
-        const property = interaction.options.getString('property', true)
-        const value = interaction.options.getString('value', true)
+	public async chatInputSet(interaction: Subcommand.ChatInputCommandInteraction) {
+		if (!interaction.guild) return
+
+		const type = interaction.options.getString('type', true)
+		const property = interaction.options.getString('property', true)
+		const value = interaction.options.getString('value', true)
 
-        const rule = await AutomodRule.findOne({ guildId: interaction.guild.id, type })
-        if (!rule) {
-            return interaction.reply({ content: '❌ Rule not found.', flags: ['Ephemeral'] })
-        }
+		const rule = await AutomodRule.findOne({ guildId: interaction.guild.id, type })
+		if (!rule) {
+			return interaction.reply({ content: '❌ Rule not found.', flags: ['Ephemeral'] })
+		}
 
-        const result = await this.updateRuleProperty(rule, property, value)
-        if (!result.success) {
-            return interaction.reply({ content: `❌ ${result.error}`, flags: ['Ephemeral'] })
-        }
-
-        return interaction.reply(`✅ Updated **${AUTOMOD_RULE_NAMES[type] || type}** rule: ${result.message}`)
-    }
+		const result = await this.updateRuleProperty(rule, property, value)
+		if (!result.success) {
+			return interaction.reply({ content: `❌ ${result.error}`, flags: ['Ephemeral'] })
+		}
+
+		return interaction.reply(`✅ Updated **${AUTOMOD_RULE_NAMES[type] || type}** rule: ${result.message}`)
+	}
 
-    public async messageInfo(message: Message, args: Args) {
-        if (!message.guild || !message.channel.isSendable()) return
-
-        const ruleType = await args.pickResult('string')
-        if (!ruleType.ok) {
-            return message.channel.send(`❌ Usage: \`rule info <${this.RULE_TYPES.join('|')}>\``)
-        }
-
-        const type = ruleType.unwrap().toLowerCase()
-        if (!this.RULE_TYPES.includes(type)) {
-            return message.channel.send(`❌ Invalid rule type. Valid types: ${this.RULE_TYPES.join(', ')}`)
-        }
-
-        const rule = await AutomodRule.findOne({ guildId: message.guild.id, type })
-        if (!rule) {
-            return message.channel.send('❌ Rule not found.')
-        }
-
-        const embed = this.buildRuleInfoEmbed(rule, message.guild.name, message.guild.iconURL())
-        return message.channel.send({ embeds: [embed] })
-    }
-
-    public async chatInputInfo(interaction: Subcommand.ChatInputCommandInteraction) {
-        if (!interaction.guild) return
-
-        const type = interaction.options.getString('type', true)
-
-        const rule = await AutomodRule.findOne({ guildId: interaction.guild.id, type })
-        if (!rule) {
-            return interaction.reply({ content: '❌ Rule not found.', flags: ['Ephemeral'] })
-        }
-
-        const embed = this.buildRuleInfoEmbed(rule, interaction.guild.name, interaction.guild.iconURL())
-        return interaction.reply({ embeds: [embed] })
-    }
-
-    public async messageBlacklist(message: Message, args: Args) {
-        if (!message.channel.isSendable()) return
-
-        const action = await args.pickResult('string').then(res => res.isOk() ? res.unwrap().toLowerCase() : null)
-        if (!action) return message.channel.send('❌ Usage: `rule blacklist <add|remove|list> <rule_type> [words...]`')
-
-        if (!['add', 'remove', 'list'].includes(action)) {
-            return message.channel.send('❌ Invalid action. Use: add, remove, or list')
-        }
-
-        const ruleType = await args.pickResult('string')
-        if (!ruleType.ok) {
-            return message.channel.send('❌ Please specify a rule type (currently only bad_words supported)')
-        }
-
-        const type = ruleType.unwrap().toLowerCase()
-        if (type !== 'bad_words') return message.channel.send('❌ Blacklist management is only available for bad_words rule')
-
-        const rule = await AutomodRule.findOne({ guildId: message.guild.id, type })
-        if (!rule) return message.channel.send('❌ Rule not found.')
-
-        if (action === 'list') {
-            if (!rule.blacklist || rule.blacklist.length === 0) return message.channel.send('📝 No words in blacklist.')
-            return message.channel.send(`📝 **Blacklisted Words:**\n${rule.blacklist.map(w => `\`${w}\``).join(', ')}`)
-        }
-
-        const words = await args.repeatResult('string').then(res => res.isOk() ? res.unwrap() : [])
-        if (arrayEmpty(words)) return message.channel.send('❌ Please provide at least one word to add/remove')
-
-        if (!rule.blacklist) rule.blacklist = []
-
-        if (action === 'add') {
-            const newWords = words.filter(w => !rule.blacklist!.includes(w.toLowerCase()))
-            rule.blacklist.push(...newWords.map(w => w.toLowerCase()))
-            await rule.save()
-            return message.channel.send(`✅ Added **${newWords.length}** word(s) to blacklist`)
-        }
-
-        if (action === 'remove') {
-            const lowerWords = words.map(w => w.toLowerCase())
-            const removed = lowerWords.filter(w => rule.blacklist!.includes(w))
-            rule.blacklist = rule.blacklist.filter(w => !lowerWords.includes(w))
-            await rule.save()
-            return message.channel.send(`✅ Removed **${removed.length}** word(s) from blacklist`)
-        }
-    }
-
-    public async chatInputBlacklist(interaction: Subcommand.ChatInputCommandInteraction) {
-        if (!interaction.guild) return
-
-        const action = interaction.options.getString('action', true)
-        const type = interaction.options.getString('type', true)
-
-        if (type !== 'bad_words') {
-            return interaction.reply({ content: '❌ Blacklist management is only available for bad_words rule', flags: ['Ephemeral'] })
-        }
-
-        const rule = await AutomodRule.findOne({ guildId: interaction.guild.id, type })
-        if (!rule) {
-            return interaction.reply({ content: '❌ Rule not found.', flags: ['Ephemeral'] })
-        }
-
-        if (action === 'list') {
-            if (!rule.blacklist || rule.blacklist.length === 0) {
-                return interaction.reply({ content: '📝 No words in blacklist.', flags: ['Ephemeral'] })
-            }
-            return interaction.reply({ content: `📝 **Blacklisted Words:**\n${rule.blacklist.map(w => `\`${w}\``).join(', ')}`, flags: ['Ephemeral'] })
-        }
-
-        const words = interaction.options.getString('words', true).split(/\s+/).filter(w => w.length > 0)
-        if (words.length === 0) {
-            return interaction.reply({ content: '❌ Please provide at least one word', flags: ['Ephemeral'] })
-        }
-
-        if (!rule.blacklist) rule.blacklist = []
-
-        if (action === 'add') {
-            const newWords = words.filter(w => !rule.blacklist!.includes(w.toLowerCase()))
-            rule.blacklist.push(...newWords.map(w => w.toLowerCase()))
-            await rule.save()
-            return interaction.reply({ content: `✅ Added **${newWords.length}** word(s) to blacklist`, flags: ['Ephemeral'] })
-        }
-
-        if (action === 'remove') {
-            const lowerWords = words.map(w => w.toLowerCase())
-            const removed = lowerWords.filter(w => rule.blacklist!.includes(w))
-            rule.blacklist = rule.blacklist.filter(w => !lowerWords.includes(w))
-            await rule.save()
-            return interaction.reply({ content: `✅ Removed **${removed.length}** word(s) from blacklist`, flags: ['Ephemeral'] })
-        }
-    }
-
-    private async updateRuleProperty(rule: IAutomodRule, property: string, value: string): Promise<{ success: boolean; message?: string; error?: string }> {
-        switch (property) {
-            case 'punishment':
-                if (!this.PUNISHMENTS.includes(value)) {
-                    return { success: false, error: `Invalid punishment. Valid: ${this.PUNISHMENTS.join(', ')}` }
-                }
-                rule.punishment = value as IAutomodRule['punishment']
-                await rule.save()
-                return { success: true, message: `Set punishment to **${value}**` }
-
-            case 'threshold':
-                const threshold = parseInt(value)
-                if (isNaN(threshold) || threshold < 1) {
-                    return { success: false, error: 'Threshold must be a positive number' }
-                }
-                rule.threshold = threshold
-                await rule.save()
-                return { success: true, message: `Set threshold to **${threshold}**` }
-
-            case 'warnings':
-                const warnings = parseInt(value)
-                if (isNaN(warnings) || warnings < 1) {
-                    return { success: false, error: 'Warnings must be a positive number' }
-                }
-                rule.warningsBeforeAction = warnings
-                await rule.save()
-                return { success: true, message: `Set warnings before action to **${warnings}**` }
-
-            case 'duration':
-                const durationMs = ms(value as any)
-                if (typeof durationMs !== 'number') {
-                    return { success: false, error: 'Invalid duration format. Examples: 1h, 30m, 1d' }
-                }
-                rule.duration = durationMs
-                await rule.save()
-                return { success: true, message: `Set duration to **${ms(durationMs, { long: true })}**` }
-            default:
-                return { success: false, error: `Invalid property. Valid: punishment, threshold, warnings, duration` }
-        }
-    }
-
-    private buildRuleInfoEmbed(rule: IAutomodRule, guildName: string, guildIcon: string | null): EmbedBuilder {
-        const embed = new EmbedBuilder()
-            .setColor(rule.enabled ? Colors.Green : Colors.Red)
-            .setAuthor({ name: `${guildName} | ${AUTOMOD_RULE_NAMES[rule.type] || rule.type} Rule`, iconURL: guildIcon || undefined })
-            .setTimestamp()
-
-        const statusEmoji = rule.enabled ? '✅' : '❌'
-        let info = `${statusEmoji} **Status:** ${rule.enabled ? 'Enabled' : 'Disabled'}\n\n`
-        info += `**Punishment:** ${rule.punishment}\n`
-
-        if (rule.threshold) {
-            info += `**Threshold:** ${rule.threshold}${rule.type === 'caps' ? '%' : ''}\n`
-        }
-
-        if (rule.warningsBeforeAction) {
-            info += `**Warnings Before Action:** ${rule.warningsBeforeAction}\n`
-        }
-
-        if (rule.duration) {
-            info += `**Duration:** ${ms(rule.duration, { long: true })}\n`
-        }
-
-        if (rule.blacklist && rule.blacklist.length > 0) {
-            info += `**Blacklisted Words:** ${rule.blacklist.length} word(s)\n`
-        }
-
-        info += `\n**Description:**\n${AUTOMOD_RULE_DESCRIPTIONS[rule.type] || 'No description available.'}`
-
-        embed.setDescription(info)
-        return embed
-    }
-
-    public override registerApplicationCommands(registry: Subcommand.Registry) {
-        registry.registerChatInputCommand((builder) =>
-            builder
-                .setName('automodrule')
-                .setDescription('Manage automoderation rules')
-                .addSubcommand((sub) =>
-                    sub.setName('enable')
-                        .setDescription('Enable an automod rule')
-                        .addStringOption((opt) =>
-                            opt.setName('type')
-                                .setDescription('The rule type to enable')
-                                .setRequired(true)
-                                .addChoices(
-                                    { name: 'Spam', value: 'spam' },
-                                    { name: 'Excessive Caps', value: 'caps' },
-                                    { name: 'Discord Invites', value: 'invites' },
-                                    { name: 'Bad Words', value: 'bad_words' },
-                                    { name: 'Attachment Spam', value: 'attachment_spam' }
-                                )
-                        )
-                )
-                .addSubcommand((sub) =>
-                    sub.setName('disable')
-                        .setDescription('Disable an automod rule')
-                        .addStringOption((opt) =>
-                            opt.setName('type')
-                                .setDescription('The rule type to disable')
-                                .setRequired(true)
-                                .addChoices(
-                                    { name: 'Spam', value: 'spam' },
-                                    { name: 'Excessive Caps', value: 'caps' },
-                                    { name: 'Discord Invites', value: 'invites' },
-                                    { name: 'Bad Words', value: 'bad_words' },
-                                    { name: 'Attachment Spam', value: 'attachment_spam' }
-                                )
-                        )
-                )
-                .addSubcommand((sub) =>
-                    sub.setName('set')
-                        .setDescription('Configure a rule property')
-                        .addStringOption((opt) =>
-                            opt.setName('type')
-                                .setDescription('The rule type')
-                                .setRequired(true)
-                                .addChoices(
-                                    { name: 'Spam', value: 'spam' },
-                                    { name: 'Excessive Caps', value: 'caps' },
-                                    { name: 'Discord Invites', value: 'invites' },
-                                    { name: 'Bad Words', value: 'bad_words' },
-                                    { name: 'Attachment Spam', value: 'attachment_spam' }
-                                )
-                        )
-                        .addStringOption((opt) =>
-                            opt.setName('property')
-                                .setDescription('The property to set')
-                                .setRequired(true)
-                                .addChoices(
-                                    { name: 'Punishment', value: 'punishment' },
-                                    { name: 'Threshold', value: 'threshold' },
-                                    { name: 'Warnings', value: 'warnings' },
-                                    { name: 'Duration', value: 'duration' }
-                                )
-                        )
-                        .addStringOption((opt) =>
-                            opt.setName('value')
-                                .setDescription('The value to set (e.g., "mute", "70", "3", "1h")')
-                                .setRequired(true)
-                        )
-                )
-                .addSubcommand((sub) =>
-                    sub.setName('blacklist')
-                        .setDescription('Manage bad words blacklist')
-                        .addStringOption((opt) =>
-                            opt.setName('action')
-                                .setDescription('Action to perform')
-                                .setRequired(true)
-                                .addChoices(
-                                    { name: 'Add', value: 'add' },
-                                    { name: 'Remove', value: 'remove' },
-                                    { name: 'List', value: 'list' }
-                                )
-                        )
-                        .addStringOption((opt) =>
-                            opt.setName('type')
-                                .setDescription('Rule type (only bad_words supported)')
-                                .setRequired(true)
-                                .addChoices(
-                                    { name: 'Bad Words', value: 'bad_words' }
-                                )
-                        )
-                        .addStringOption((opt) =>
-                            opt.setName('words')
-                                .setDescription('Space-separated words to add/remove (not needed for list)')
-                                .setRequired(false)
-                        )
-                )
-                .addSubcommand((sub) =>
-                    sub.setName('info')
-                        .setDescription('View detailed information about a rule')
-                        .addStringOption((opt) =>
-                            opt.setName('type')
-                                .setDescription('The rule type to view')
-                                .setRequired(true)
-                                .addChoices(
-                                    { name: 'Spam', value: 'spam' },
-                                    { name: 'Excessive Caps', value: 'caps' },
-                                    { name: 'Discord Invites', value: 'invites' },
-                                    { name: 'Bad Words', value: 'bad_words' },
-                                    { name: 'Attachment Spam', value: 'attachment_spam' }
-                                )
-                        )
-                )
-        )
-    }
+	public async messageInfo(message: Message, args: Args) {
+		if (!message.guild || !message.channel.isSendable()) return
+
+		const ruleType = await args.pickResult('string')
+		if (!ruleType.ok) {
+			return message.channel.send(`❌ Usage: \`rule info <${this.RULE_TYPES.join('|')}>\``)
+		}
+
+		const type = ruleType.unwrap().toLowerCase()
+		if (!this.RULE_TYPES.includes(type)) {
+			return message.channel.send(`❌ Invalid rule type. Valid types: ${this.RULE_TYPES.join(', ')}`)
+		}
+
+		const rule = await AutomodRule.findOne({ guildId: message.guild.id, type })
+		if (!rule) {
+			return message.channel.send('❌ Rule not found.')
+		}
+
+		const embed = this.buildRuleInfoEmbed(rule, message.guild.name, message.guild.iconURL())
+		return message.channel.send({ embeds: [embed] })
+	}
+
+	public async chatInputInfo(interaction: Subcommand.ChatInputCommandInteraction) {
+		if (!interaction.guild) return
+
+		const type = interaction.options.getString('type', true)
+
+		const rule = await AutomodRule.findOne({ guildId: interaction.guild.id, type })
+		if (!rule) {
+			return interaction.reply({ content: '❌ Rule not found.', flags: ['Ephemeral'] })
+		}
+
+		const embed = this.buildRuleInfoEmbed(rule, interaction.guild.name, interaction.guild.iconURL())
+		return interaction.reply({ embeds: [embed] })
+	}
+
+	public async messageBlacklist(message: Message, args: Args) {
+		if (!message.channel.isSendable()) return
+
+		const action = await args.pickResult('string').then((res) => (res.isOk() ? res.unwrap().toLowerCase() : null))
+		if (!action) return message.channel.send('❌ Usage: `rule blacklist <add|remove|list> <rule_type> [words...]`')
+
+		if (!['add', 'remove', 'list'].includes(action)) {
+			return message.channel.send('❌ Invalid action. Use: add, remove, or list')
+		}
+
+		const ruleType = await args.pickResult('string')
+		if (!ruleType.ok) {
+			return message.channel.send('❌ Please specify a rule type (currently only bad_words supported)')
+		}
+
+		const type = ruleType.unwrap().toLowerCase()
+		if (type !== 'bad_words') return message.channel.send('❌ Blacklist management is only available for bad_words rule')
+
+		const rule = await AutomodRule.findOne({ guildId: message.guild.id, type })
+		if (!rule) return message.channel.send('❌ Rule not found.')
+
+		if (action === 'list') {
+			if (!rule.blacklist || rule.blacklist.length === 0) return message.channel.send('📝 No words in blacklist.')
+			return message.channel.send(`📝 **Blacklisted Words:**\n${rule.blacklist.map((w) => `\`${w}\``).join(', ')}`)
+		}
+
+		const words = await args.repeatResult('string').then((res) => (res.isOk() ? res.unwrap() : []))
+		if (arrayEmpty(words)) return message.channel.send('❌ Please provide at least one word to add/remove')
+
+		if (!rule.blacklist) rule.blacklist = []
+
+		if (action === 'add') {
+			const newWords = words.filter((w) => !rule.blacklist!.includes(w.toLowerCase()))
+			rule.blacklist.push(...newWords.map((w) => w.toLowerCase()))
+			await rule.save()
+			return message.channel.send(`✅ Added **${newWords.length}** word(s) to blacklist`)
+		}
+
+		if (action === 'remove') {
+			const lowerWords = words.map((w) => w.toLowerCase())
+			const removed = lowerWords.filter((w) => rule.blacklist!.includes(w))
+			rule.blacklist = rule.blacklist.filter((w) => !lowerWords.includes(w))
+			await rule.save()
+			return message.channel.send(`✅ Removed **${removed.length}** word(s) from blacklist`)
+		}
+	}
+
+	public async chatInputBlacklist(interaction: Subcommand.ChatInputCommandInteraction) {
+		if (!interaction.guild) return
+
+		const action = interaction.options.getString('action', true)
+		const type = interaction.options.getString('type', true)
+
+		if (type !== 'bad_words') {
+			return interaction.reply({ content: '❌ Blacklist management is only available for bad_words rule', flags: ['Ephemeral'] })
+		}
+
+		const rule = await AutomodRule.findOne({ guildId: interaction.guild.id, type })
+		if (!rule) {
+			return interaction.reply({ content: '❌ Rule not found.', flags: ['Ephemeral'] })
+		}
+
+		if (action === 'list') {
+			if (!rule.blacklist || rule.blacklist.length === 0) {
+				return interaction.reply({ content: '📝 No words in blacklist.', flags: ['Ephemeral'] })
+			}
+			return interaction.reply({ content: `📝 **Blacklisted Words:**\n${rule.blacklist.map((w) => `\`${w}\``).join(', ')}`, flags: ['Ephemeral'] })
+		}
+
+		const words = interaction.options
+			.getString('words', true)
+			.split(/\s+/)
+			.filter((w) => w.length > 0)
+		if (words.length === 0) {
+			return interaction.reply({ content: '❌ Please provide at least one word', flags: ['Ephemeral'] })
+		}
+
+		if (!rule.blacklist) rule.blacklist = []
+
+		if (action === 'add') {
+			const newWords = words.filter((w) => !rule.blacklist!.includes(w.toLowerCase()))
+			rule.blacklist.push(...newWords.map((w) => w.toLowerCase()))
+			await rule.save()
+			return interaction.reply({ content: `✅ Added **${newWords.length}** word(s) to blacklist`, flags: ['Ephemeral'] })
+		}
+
+		if (action === 'remove') {
+			const lowerWords = words.map((w) => w.toLowerCase())
+			const removed = lowerWords.filter((w) => rule.blacklist!.includes(w))
+			rule.blacklist = rule.blacklist.filter((w) => !lowerWords.includes(w))
+			await rule.save()
+			return interaction.reply({ content: `✅ Removed **${removed.length}** word(s) from blacklist`, flags: ['Ephemeral'] })
+		}
+	}
+
+	private async updateRuleProperty(
+		rule: IAutomodRule,
+		property: string,
+		value: string
+	): Promise<{ success: boolean; message?: string; error?: string }> {
+		switch (property) {
+			case 'punishment':
+				if (!this.PUNISHMENTS.includes(value)) {
+					return { success: false, error: `Invalid punishment. Valid: ${this.PUNISHMENTS.join(', ')}` }
+				}
+				rule.punishment = value as IAutomodRule['punishment']
+				await rule.save()
+				return { success: true, message: `Set punishment to **${value}**` }
+
+			case 'threshold':
+				const threshold = parseInt(value)
+				if (isNaN(threshold) || threshold < 1) {
+					return { success: false, error: 'Threshold must be a positive number' }
+				}
+				rule.threshold = threshold
+				await rule.save()
+				return { success: true, message: `Set threshold to **${threshold}**` }
+
+			case 'warnings':
+				const warnings = parseInt(value)
+				if (isNaN(warnings) || warnings < 1) {
+					return { success: false, error: 'Warnings must be a positive number' }
+				}
+				rule.warningsBeforeAction = warnings
+				await rule.save()
+				return { success: true, message: `Set warnings before action to **${warnings}**` }
+
+			case 'duration':
+				const durationMs = ms(value as any)
+				if (typeof durationMs !== 'number') {
+					return { success: false, error: 'Invalid duration format. Examples: 1h, 30m, 1d' }
+				}
+				rule.duration = durationMs
+				await rule.save()
+				return { success: true, message: `Set duration to **${ms(durationMs, { long: true })}**` }
+			default:
+				return { success: false, error: `Invalid property. Valid: punishment, threshold, warnings, duration` }
+		}
+	}
+
+	private buildRuleInfoEmbed(rule: IAutomodRule, guildName: string, guildIcon: string | null): EmbedBuilder {
+		const embed = new EmbedBuilder()
+			.setColor(rule.enabled ? Colors.Green : Colors.Red)
+			.setAuthor({ name: `${guildName} | ${AUTOMOD_RULE_NAMES[rule.type] || rule.type} Rule`, iconURL: guildIcon || undefined })
+			.setTimestamp()
+
+		const statusEmoji = rule.enabled ? '✅' : '❌'
+		let info = `${statusEmoji} **Status:** ${rule.enabled ? 'Enabled' : 'Disabled'}\n\n`
+		info += `**Punishment:** ${rule.punishment}\n`
+
+		if (rule.threshold) {
+			info += `**Threshold:** ${rule.threshold}${rule.type === 'caps' ? '%' : ''}\n`
+		}
+
+		if (rule.warningsBeforeAction) {
+			info += `**Warnings Before Action:** ${rule.warningsBeforeAction}\n`
+		}
+
+		if (rule.duration) {
+			info += `**Duration:** ${ms(rule.duration, { long: true })}\n`
+		}
+
+		if (rule.blacklist && rule.blacklist.length > 0) {
+			info += `**Blacklisted Words:** ${rule.blacklist.length} word(s)\n`
+		}
+
+		info += `\n**Description:**\n${AUTOMOD_RULE_DESCRIPTIONS[rule.type] || 'No description available.'}`
+
+		embed.setDescription(info)
+		return embed
+	}
+
+	// biome-ignore format
+	public override registerApplicationCommands(registry: Subcommand.Registry) {
+		registry.registerChatInputCommand((builder) =>
+			builder
+				.setName('automodrule')
+				.setDescription('Manage automoderation rules')
+				.addSubcommand((sub) =>
+					sub
+						.setName('enable')
+						.setDescription('Enable an automod rule')
+						.addStringOption((option) =>
+							option
+								.setName('type')
+								.setDescription('The rule type to enable')
+								.setRequired(true)
+								.addChoices(
+									{ name: 'Spam', value: 'spam' },
+									{ name: 'Excessive Caps', value: 'caps' },
+									{ name: 'Discord Invites', value: 'invites' },
+									{ name: 'Bad Words', value: 'bad_words' },
+									{ name: 'Attachment Spam', value: 'attachment_spam' }
+								)
+						)
+				)
+				.addSubcommand((sub) =>
+					sub
+						.setName('disable')
+						.setDescription('Disable an automod rule')
+						.addStringOption((option) =>
+							option
+								.setName('type')
+								.setDescription('The rule type to disable')
+								.setRequired(true)
+								.addChoices(
+									{ name: 'Spam', value: 'spam' },
+									{ name: 'Excessive Caps', value: 'caps' },
+									{ name: 'Discord Invites', value: 'invites' },
+									{ name: 'Bad Words', value: 'bad_words' },
+									{ name: 'Attachment Spam', value: 'attachment_spam' }
+								)
+						)
+				)
+				.addSubcommand((sub) =>
+					sub
+						.setName('set')
+						.setDescription('Configure a rule property')
+						.addStringOption((option) =>
+							option
+								.setName('type')
+								.setDescription('The rule type')
+								.setRequired(true)
+								.addChoices(
+									{ name: 'Spam', value: 'spam' },
+									{ name: 'Excessive Caps', value: 'caps' },
+									{ name: 'Discord Invites', value: 'invites' },
+									{ name: 'Bad Words', value: 'bad_words' },
+									{ name: 'Attachment Spam', value: 'attachment_spam' }
+								)
+						)
+					.addStringOption((option) =>
+						option
+							.setName('property')
+							.setDescription('The property to set')
+							.setRequired(true)
+							.addChoices(
+								{ name: 'Punishment', value: 'punishment' },
+								{ name: 'Threshold', value: 'threshold' },
+								{ name: 'Warnings', value: 'warnings' },
+								{ name: 'Duration', value: 'duration' }
+							)
+					)
+					.addStringOption((option) =>
+						option
+							.setName('value')
+							.setDescription('The value to set (e.g., "mute", "70", "3", "1h")')
+							.setRequired(true)
+					)
+				)
+				.addSubcommand((sub) =>
+					sub
+						.setName('blacklist')
+						.setDescription('Manage bad words blacklist')
+						.addStringOption((option) =>
+							option
+								.setName('action')
+								.setDescription('Action to perform')
+								.setRequired(true)
+								.addChoices(
+									{ name: 'Add', value: 'add' },
+									{ name: 'Remove', value: 'remove' },
+									{ name: 'List', value: 'list' }
+								)
+						)
+					.addStringOption((option) =>
+						option
+							.setName('type')
+							.setDescription('Rule type (only bad_words supported)')
+							.setRequired(true)
+							.addChoices(
+								{ name: 'Bad Words', value: 'bad_words' }
+							)
+					)
+					.addStringOption((option) =>
+						option
+							.setName('words')
+							.setDescription('Space-separated words to add/remove (not needed for list)')
+							.setRequired(false)
+					)
+				)
+				.addSubcommand((sub) =>
+					sub
+						.setName('info')
+						.setDescription('View detailed information about a rule')
+					.addStringOption((option) =>
+						option
+							.setName('type')
+							.setDescription('The rule type to view')
+							.setRequired(true)
+							.addChoices(
+								{ name: 'Spam', value: 'spam' },
+								{ name: 'Excessive Caps', value: 'caps' },
+								{ name: 'Discord Invites', value: 'invites' },
+								{ name: 'Bad Words', value: 'bad_words' },
+								{ name: 'Attachment Spam', value: 'attachment_spam' }
+							)
+					)
+				)
+		)
+	}
 }

@@ -3,19 +3,22 @@ import { ApplyOptions } from '@sapphire/decorators'
 import { Events, MessageReaction, User } from 'discord.js'
 
 @ApplyOptions<Listener.Options>({
-    event: Events.MessageReactionAdd
+	event: Events.MessageReactionAdd
 })
 export class EventListener extends Listener {
-    private client = this.container.client
+	private client = this.container.client
 
-    public override async run(reaction: MessageReaction, user: User) {
-        if (reaction.partial) {
-            try { await reaction.fetch() }
-            catch { return }
-        }
+	public override async run(reaction: MessageReaction, user: User) {
+		if (reaction.partial) {
+			try {
+				await reaction.fetch()
+			} catch {
+				return
+			}
+		}
 
-        if (!reaction.message.guild) return
+		if (!reaction.message.guild) return
 
-        await this.client.roleGroups.handleReactionAdd(reaction, user)
-    }
+		await this.client.roleGroups.handleReactionAdd(reaction, user)
+	}
 }

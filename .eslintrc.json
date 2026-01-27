@@ -1,33 +1,25 @@
 {
-    "env": {
-        "es6": true,
-        "node": true
-    },
-    "extends": "eslint:recommended",
-    "parser": "@typescript-eslint/parser",
-    "parserOptions": {
-        "ecmaVersion": 2024,
-        "sourceType": "module"
-    },
-    "plugins": [
-        "@typescript-eslint"
-    ],
-    "rules": {
-        "semi": [
-            "error",
-            "never"
-        ],
-        "quotes": [
-            "error",
-            "single"
-        ],
-        "comma-spacing": 0,
-        "no-useless-return": "error",
-        "no-unused-vars": "off",
-        "no-undef": "off",
-        "complexity": "error",
-        "no-sparse-arrays": "off",
-        "no-dupe-class-members":"off",
-        "no-redeclare":"off"
-    }
+	"env": {
+		"es6": true,
+		"node": true
+	},
+	"extends": "eslint:recommended",
+	"parser": "@typescript-eslint/parser",
+	"parserOptions": {
+		"ecmaVersion": 2024,
+		"sourceType": "module"
+	},
+	"plugins": ["@typescript-eslint"],
+	"rules": {
+		"semi": ["error", "never"],
+		"quotes": ["error", "single"],
+		"comma-spacing": 0,
+		"no-useless-return": "error",
+		"no-unused-vars": "off",
+		"no-undef": "off",
+		"complexity": "error",
+		"no-sparse-arrays": "off",
+		"no-dupe-class-members": "off",
+		"no-redeclare": "off"
+	}
 }

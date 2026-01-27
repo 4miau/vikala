@@ -7,23 +7,28 @@ import { envs } from '../../lib/util/environmentVariables'
 
 @ApplyOptions<Piece.Options>({ name: 'ggdeals' })
 export default class GGDeals extends Task {
-    client = this.container.client
+	client = this.container.client
 
-    async exec(gameId: string, region?: string) {
-        const validRegion = ['au', 'be', 'br', 'ca', 'ch', 'de', 'dk', 'es', 'eu', 'fi', 'fr', 'gb', 'ie', 'it', 'nl', 'no', 'pl', 'se', 'us'].includes(region) ? region : 'us'
+	async exec(gameId: string, region?: string) {
+		const validRegion = ['au', 'be', 'br', 'ca', 'ch', 'de', 'dk', 'es', 'eu', 'fi', 'fr', 'gb', 'ie', 'it', 'nl', 'no', 'pl', 'se', 'us'].includes(
+			region
+		)
+			? region
+			: 'us'
 
-        const obj = {
-            method: 'GET',
-            url: ggDealsApi,
-            params: {
-                key: envs.GGDEALS_API_KEY,
-                ids: gameId,
-                region: validRegion
-            }
-        }
+		const obj = {
+			method: 'GET',
+			url: ggDealsApi,
+			params: {
+				key: envs.GGDEALS_API_KEY,
+				ids: gameId,
+				region: validRegion
+			}
+		}
 
-        return this.client.api.set(obj)
-            .call()
-            .then((res) => res.data[gameId])
-    }
+		return this.client.api
+			.set(obj)
+			.call()
+			.then((res) => res.data[gameId])
+	}
 }

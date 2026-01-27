@@ -7,3 +7,5 @@ templates
 .github
 .results
 src/commands/Owner/test.ts
+src/storage
+.biome-*

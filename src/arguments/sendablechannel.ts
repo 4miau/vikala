@@ -6,16 +6,17 @@ import { SendableChannel } from '../typings/@definitions/Arguments'
 
 @ApplyOptions<Argument.Options>({ name: 'sendablechannel' })
 export class SendableChannelArgument extends Argument<SendableChannel> {
-    public run(parameter: string, context: Argument.Context): Argument.Result<SendableChannel> {
-        const channelResult = Resolvers.resolveGuildChannel(parameter, context.message!.guild)
+	public run(parameter: string, context: Argument.Context): Argument.Result<SendableChannel> {
+		const channelResult = Resolvers.resolveGuildChannel(parameter, context.message!.guild)
 
-        if (channelResult.ok && !isNullish(channelResult) && channelResult.unwrap().isSendable()) return this.ok(channelResult.unwrap() as SendableChannel)
+		if (channelResult.ok && !isNullish(channelResult) && channelResult.unwrap().isSendable())
+			return this.ok(channelResult.unwrap() as SendableChannel)
 
-        return this.error({
-            context,
-            parameter,
-            message: 'The provided argument could not be resolved to a valid SendableChannel.',
-            identifier: 'InvalidSendableChannel'
-        })
-    }
+		return this.error({
+			context,
+			parameter,
+			message: 'The provided argument could not be resolved to a valid SendableChannel.',
+			identifier: 'InvalidSendableChannel'
+		})
+	}
 }

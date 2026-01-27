@@ -6,15 +6,14 @@ import { foxApi } from '../../lib/util/constants'
 
 @ApplyOptions<Piece.Options>({ name: 'getfoxpicture' })
 export class GetFoxPicture extends Task {
-    client = this.container.client
+	client = this.container.client
 
-    async exec() {
-        const obj: any = {
-            method: 'GET',
-            url: foxApi
-        }
+	async exec() {
+		const obj: any = {
+			method: 'GET',
+			url: foxApi
+		}
 
-        return this.client.api.set(obj)
-            .call()
-    }
+		return this.client.api.set(obj).call()
+	}
 }

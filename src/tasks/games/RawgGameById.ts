@@ -7,16 +7,15 @@ import { envs } from '../../lib/util/environmentVariables'
 
 @ApplyOptions<Piece.Options>({ name: 'rawggamebyid' })
 export default class RawgGameById extends Task {
-    client = this.container.client
+	client = this.container.client
 
-    async exec(gameId: string) {
-        const obj = {
-            method: 'GET',
-            url: [rawgApi, 'games', gameId].join('/'),
-            params: { key: envs.RAWG_API_KEY }
-        }
+	async exec(gameId: string) {
+		const obj = {
+			method: 'GET',
+			url: [rawgApi, 'games', gameId].join('/'),
+			params: { key: envs.RAWG_API_KEY }
+		}
 
-        return await this.client.api.set(obj)
-            .call()
-    }
+		return await this.client.api.set(obj).call()
+	}
 }

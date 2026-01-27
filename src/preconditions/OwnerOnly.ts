@@ -1,7 +1,5 @@
 import type { ChatInputCommandInteraction, ContextMenuCommandInteraction, Message } from 'discord.js'
-import {
-	AllFlowsPrecondition, Identifiers, MessageCommand, Precondition, PreconditionContext, PreconditionResult
-} from '@sapphire/framework'
+import { AllFlowsPrecondition, Identifiers, MessageCommand, Precondition, PreconditionContext, PreconditionResult } from '@sapphire/framework'
 import { ApplyOptions } from '@sapphire/decorators'
 
 ApplyOptions<Precondition.Options>({ name: 'OwnerOnly' })
@@ -20,12 +18,14 @@ export class OwnerOnly extends Precondition {
 		return this.checkOwner(interaction.user.id)
 	}
 
-	private checkOwner(id: string) { return id === this.client.owner ? this.ok() : this.ownerOnlyError() }
+	private checkOwner(id: string) {
+		return id === this.client.owner ? this.ok() : this.ownerOnlyError()
+	}
 
 	private ownerOnlyError(): AllFlowsPrecondition.Result {
 		return this.error({
 			identifier: Identifiers.PreconditionUnavailable,
-			message: 'Only the owner can run this command.',
+			message: 'Only the owner can run this command.'
 		})
 	}
 }
