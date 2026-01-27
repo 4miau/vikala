@@ -89,7 +89,7 @@ export class Reload extends Command {
 						return sendFn({ content: 'Please specify a structure name to reload.' })
 					}
 
-					const result = await this.client.hotReloadManager.reloadStructure(name)
+					const result = await this.client.reloadManager.reloadStructure(name)
 
 					embed
 						.setTitle('🔄 Structure Reload')
@@ -103,7 +103,7 @@ export class Reload extends Command {
 						return sendFn({ content: 'Please specify a model name to reload.' })
 					}
 
-					const result = await this.client.hotReloadManager.reloadModel(name)
+					const result = await this.client.reloadManager.reloadModel(name)
 
 					embed
 						.setTitle('🔄 Model Reload')
@@ -148,7 +148,7 @@ export class Reload extends Command {
 						return sendFn({ content: 'Please specify a structure name to load.' })
 					}
 
-					const result = await this.client.hotReloadManager.loadNewStructure(name)
+					const result = await this.client.reloadManager.loadNewStructure(name)
 
 					embed
 						.setTitle('✨ Load New Structure')
@@ -162,7 +162,7 @@ export class Reload extends Command {
 						return sendFn({ content: 'Please specify a model name to load.' })
 					}
 
-					const result = await this.client.hotReloadManager.loadNewModel(name)
+					const result = await this.client.reloadManager.loadNewModel(name)
 
 					embed
 						.setTitle('✨ Load New Model')
@@ -172,7 +172,7 @@ export class Reload extends Command {
 				}
 
 				case 'blacklist': {
-					const blacklist = this.client.hotReloadManager.getBlacklist()
+					const blacklist = this.client.reloadManager.getBlacklist()
 
 					embed
 						.setTitle('🚫 Hot Reload Blacklist')

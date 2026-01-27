@@ -8,4 +8,15 @@ templates
 .results
 src/commands/Owner/test.ts
 src/storage
+feature-*.md
+
+# Biome editor settings
 .biome-*
+
+# Docker
+logs/
+docker compose.override.yml
+DOCKER*.md
+
+# MongoDB backups
+mongodb-backup-*

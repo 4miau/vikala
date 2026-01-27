@@ -31,8 +31,7 @@ import WelcomeManager from '../structures/WelcomeManager'
 import AutoroleManager from '../structures/AutoroleManager'
 import AutomodManager from '../structures/AutomodManager'
 import RoleGroupManager from '../structures/RoleGroupManager'
-import HotReloadWatcher from '../structures/HotReloadWatcher'
-import HotReloadManager from '../structures/HotReloadManager'
+import ReloadManager from '../structures/ReloadManager'
 import ThreadManager from '../structures/ThreadManager'
 import ChannelSnapshotManager from '../structures/ChannelSnapshotManager'
 
@@ -62,8 +61,7 @@ declare module '@sapphire/framework' {
 		channelSnapshots: ChannelSnapshotManager
 		api: APIManager
 		queue: Queue
-		hotReloadWatcher: HotReloadWatcher
-		hotReloadManager: HotReloadManager
+		reloadManager: ReloadManager
 	}
 }
 
@@ -98,8 +96,7 @@ export default class Vikala extends SapphireClient {
 	channelSnapshots: ChannelSnapshotManager
 	api: APIManager
 	queue: Queue
-	hotReloadWatcher: HotReloadWatcher
-	hotReloadManager: HotReloadManager
+	reloadManager: ReloadManager
 
 	public constructor(config: BotOptions) {
 		super({
@@ -136,8 +133,7 @@ export default class Vikala extends SapphireClient {
 			partials: [Partials.Message, Partials.Channel, Partials.User, Partials.GuildMember, Partials.Reaction],
 			loadDefaultErrorListeners: true,
 			loadSubcommandErrorListeners: true,
-			loadApplicationCommandRegistriesStatusListeners: true,
-			hmr: { enabled: process.env.NODE_ENV === 'development' }
+			loadApplicationCommandRegistriesStatusListeners: true
 		})
 
 		this.owner = config.owner
@@ -145,10 +141,7 @@ export default class Vikala extends SapphireClient {
 	}
 
 	private async _init() {
-		await mongoose.connect(envs.dbServer).then(() => {
-			this.logger.info('Connected to database successfully.')
-		})
-
+		await mongoose.connect(envs.dbServer).then(() => { this.logger.info('Connected to database successfully.') })
 		const components = new Components(this)
 		await components._loadAll()
 	}
@@ -156,6 +149,7 @@ export default class Vikala extends SapphireClient {
 	public async start() {
 		try {
 			await this._init()
+			this.logger.info(`🔧 Starting bot in (NODE_ENV: ${envs.NODE_ENV})`)
 			return this.login(this.token)
 		} catch (err) {
 			this.logger.fatal('Failed to start bot. Invalid token provided.\n', err)

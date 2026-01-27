@@ -1,7 +1,7 @@
 import path from 'path'
 import Vikala from '../client/vikala'
 
-export default class HotReloadManager {
+export default class ReloadManager {
 	private client: Vikala
 	private structureBlacklist = new Set(['SettingsProvider', 'APIManager', 'Queue'])
 
@@ -48,7 +48,7 @@ export default class HotReloadManager {
 
 			;(this.client as any)[propertyName] = newInstance
 
-			this.client.logger.info(`🔄 Hot reloaded structure: ${structureName}`)
+			this.client.logger.info(`🔄 Reloaded structure: ${structureName}`)
 
 			return {
 				success: true,
@@ -79,7 +79,7 @@ export default class HotReloadManager {
 
 			require(`../database/${modelName}`)
 
-			this.client.logger.info(`🔄 Hot reloaded model: ${modelName}`)
+			this.client.logger.info(`🔄 Reloaded model: ${modelName}`)
 
 			return {
 				success: true,
@@ -96,12 +96,12 @@ export default class HotReloadManager {
 
 	public addToBlacklist(structureName: string): void {
 		this.structureBlacklist.add(structureName)
-		this.client.logger.info(`Added '${structureName}' to hot reload blacklist`)
+		this.client.logger.info(`Added '${structureName}' to reload blacklist`)
 	}
 
 	public removeFromBlacklist(structureName: string): void {
 		this.structureBlacklist.delete(structureName)
-		this.client.logger.info(`Removed '${structureName}' from hot reload blacklist`)
+		this.client.logger.info(`Removed '${structureName}' from reload blacklist`)
 	}
 
 	public getBlacklist(): string[] {
