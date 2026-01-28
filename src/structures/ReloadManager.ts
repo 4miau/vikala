@@ -1,7 +1,7 @@
 import path from 'path'
 import Vikala from '../client/vikala'
 
-export default class HotReloadManager {
+export default class ReloadManager {
 	private client: Vikala
 	private structureBlacklist = new Set(['SettingsProvider', 'APIManager', 'Queue'])
 
@@ -11,6 +11,14 @@ export default class HotReloadManager {
 
 	public async reloadStructure(structureName: string): Promise<{ success: boolean; message: string }> {
 		try {
+			const validation = this.validateName(structureName, 'structure')
+			if (!validation.valid) {
+				return {
+					success: false,
+					message: validation.error!
+				}
+			}
+
 			if (this.structureBlacklist.has(structureName)) {
 				return {
 					success: false,
@@ -48,7 +56,7 @@ export default class HotReloadManager {
 
 			;(this.client as any)[propertyName] = newInstance
 
-			this.client.logger.info(`🔄 Hot reloaded structure: ${structureName}`)
+			this.client.logger.info(`🔄 Reloaded structure: ${structureName}`)
 
 			return {
 				success: true,
@@ -65,6 +73,14 @@ export default class HotReloadManager {
 
 	public async reloadModel(modelName: string): Promise<{ success: boolean; message: string }> {
 		try {
+			const validation = this.validateName(modelName, 'model')
+			if (!validation.valid) {
+				return {
+					success: false,
+					message: validation.error!
+				}
+			}
+
 			const modelPath = path.join(__dirname, '..', 'database', `${modelName}.ts`)
 			const modelJsPath = path.join(__dirname, '..', 'database', `${modelName}.js`)
 
@@ -79,7 +95,7 @@ export default class HotReloadManager {
 
 			require(`../database/${modelName}`)
 
-			this.client.logger.info(`🔄 Hot reloaded model: ${modelName}`)
+			this.client.logger.info(`🔄 Reloaded model: ${modelName}`)
 
 			return {
 				success: true,
@@ -96,12 +112,12 @@ export default class HotReloadManager {
 
 	public addToBlacklist(structureName: string): void {
 		this.structureBlacklist.add(structureName)
-		this.client.logger.info(`Added '${structureName}' to hot reload blacklist`)
+		this.client.logger.info(`Added '${structureName}' to reload blacklist`)
 	}
 
 	public removeFromBlacklist(structureName: string): void {
 		this.structureBlacklist.delete(structureName)
-		this.client.logger.info(`Removed '${structureName}' from hot reload blacklist`)
+		this.client.logger.info(`Removed '${structureName}' from reload blacklist`)
 	}
 
 	public getBlacklist(): string[] {
@@ -110,6 +126,14 @@ export default class HotReloadManager {
 
 	public async loadNewStructure(structureName: string): Promise<{ success: boolean; message: string }> {
 		try {
+			const validation = this.validateName(structureName, 'structure')
+			if (!validation.valid) {
+				return {
+					success: false,
+					message: validation.error!
+				}
+			}
+
 			if (this.structureBlacklist.has(structureName)) {
 				return {
 					success: false,
@@ -153,6 +177,14 @@ export default class HotReloadManager {
 
 	public async loadNewModel(modelName: string): Promise<{ success: boolean; message: string }> {
 		try {
+			const validation = this.validateName(modelName, 'model')
+			if (!validation.valid) {
+				return {
+					success: false,
+					message: validation.error!
+				}
+			}
+
 			require(`../database/${modelName}`)
 
 			this.client.logger.info(`✨ Loaded new model: ${modelName}`)
@@ -168,5 +200,38 @@ export default class HotReloadManager {
 				message: `Failed to load new model: ${error instanceof Error ? error.message : String(error)}`
 			}
 		}
+	}
+
+	private validateName(name: string, type: 'structure' | 'model'): { valid: boolean; error?: string } {
+		// Block reserved property names to prevent prototype pollution
+		const reservedNames = ['__proto__', 'prototype', 'constructor']
+		const normalizedName = name.toLowerCase()
+
+		if (reservedNames.includes(normalizedName)) {
+			return {
+				valid: false,
+				error: `Invalid ${type} name. Reserved identifiers like '__proto__', 'prototype', and 'constructor' are not allowed.`
+			}
+		}
+
+		// Only allow alphanumeric characters, underscores, and hyphens
+		const validNamePattern = /^[a-zA-Z0-9_-]+$/
+
+		if (!validNamePattern.test(name)) {
+			return {
+				valid: false,
+				error: `Invalid ${type} name. Only alphanumeric characters, underscores, and hyphens are allowed.`
+			}
+		}
+
+		// Prevent path traversal patterns
+		if (name.includes('..') || name.includes('/') || name.includes('\\')) {
+			return {
+				valid: false,
+				error: `Invalid ${type} name. Path traversal patterns are not allowed.`
+			}
+		}
+
+		return { valid: true }
 	}
 }
