@@ -203,6 +203,17 @@ export default class ReloadManager {
 	}
 
 	private validateName(name: string, type: 'structure' | 'model'): { valid: boolean; error?: string } {
+		// Block reserved property names to prevent prototype pollution
+		const reservedNames = ['__proto__', 'prototype', 'constructor']
+		const normalizedName = name.toLowerCase()
+
+		if (reservedNames.includes(normalizedName)) {
+			return {
+				valid: false,
+				error: `Invalid ${type} name. Reserved identifiers like '__proto__', 'prototype', and 'constructor' are not allowed.`
+			}
+		}
+
 		// Only allow alphanumeric characters, underscores, and hyphens
 		const validNamePattern = /^[a-zA-Z0-9_-]+$/
 

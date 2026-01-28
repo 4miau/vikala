@@ -74,8 +74,11 @@ restore: ## Restore MongoDB database (requires BACKUP_DIR variable)
 status: ## Show status of all services
 	docker compose ps
 
-shell: ## Open shell in bot container
-	docker compose exec vikala sh
+shell: ## Open shell in bot container (dev)
+	docker compose exec bot sh
+
+shell-prod: ## Open shell in production bot container
+	docker compose --profile prod exec bot-prod sh
 
 shell-mongodb: ## Open MongoDB shell
 	docker compose exec mongodb mongosh \
