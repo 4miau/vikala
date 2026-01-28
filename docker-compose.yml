@@ -23,6 +23,7 @@ services:
 
   # Vikala Bot - Production
   bot-prod:
+    image: vikala
     build:
       context: .
       dockerfile: Dockerfile
@@ -38,14 +39,12 @@ services:
     volumes:
       - ./logs:/app/logs
       - ./src/keys:/app/src/keys:ro
-    depends_on:
-      mongodb:
-        condition: service_healthy
     profiles:
       - prod
 
   # Vikala Bot - Development (default)
   bot:
+    image: vikala
     build:
       context: .
       dockerfile: Dockerfile

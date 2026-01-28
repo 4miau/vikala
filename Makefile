@@ -54,22 +54,38 @@ rebuild: ## Rebuild and restart services
 
 backup: ## Backup MongoDB database
 	@mkdir -p ./backups
-	docker compose exec mongodb mongodump \
-		--uri="mongodb://$${MONGO_ROOT_USERNAME}:$${MONGO_ROOT_PASSWORD}@localhost:27017/$${MONGO_DATABASE:-vikala}?authSource=admin" \
-		--out=/tmp/backup
-	docker cp vikala-mongodb:/tmp/backup ./backups/vikala-$(shell date +%Y%m%d-%H%M%S)
+	@echo "Creating database backup..."
+	@docker compose exec -T mongodb bash -c 'mongodump \
+		--host=localhost \
+		--port=27017 \
+		--authenticationDatabase=admin \
+		--username="$$MONGO_INITDB_ROOT_USERNAME" \
+		--password="$$MONGO_INITDB_ROOT_PASSWORD" \
+		--db=vikala-dev \
+		--out=/tmp/backup; \
+		mkdir -p /tmp/backup'
+	@docker cp vikala-mongodb:/tmp/backup ./backups/vikala-$(shell date +%Y%m%d-%H%M%S)
+	@docker compose exec -T mongodb rm -rf /tmp/backup
 	@echo "Backup created in ./backups/"
 
 restore: ## Restore MongoDB database (requires BACKUP_DIR variable)
 	@if [ -z "$(BACKUP_DIR)" ]; then \
 		echo "Error: BACKUP_DIR not specified"; \
-		echo "Usage: make restore BACKUP_DIR=./backups/vikala-20240101-120000"; \
+		echo "Usage: make restore BACKUP_DIR=./backups/db-20240101-120000"; \
 		exit 1; \
 	fi
-	docker cp $(BACKUP_DIR) vikala-mongodb:/tmp/restore
-	docker compose exec mongodb mongorestore \
-		--uri="mongodb://$${MONGO_ROOT_USERNAME}:$${MONGO_ROOT_PASSWORD}@localhost:27017/$${MONGO_DATABASE:-vikala}?authSource=admin" \
-		/tmp/restore
+	@echo "Restoring database from $(BACKUP_DIR)..."
+	@docker cp $(BACKUP_DIR) vikala-mongodb:/tmp/restore
+	@docker compose exec -T mongodb bash -c 'mongorestore \
+		--host=localhost \
+		--port=27017 \
+		--authenticationDatabase=admin \
+		--username="$$MONGO_INITDB_ROOT_USERNAME" \
+		--password="$$MONGO_INITDB_ROOT_PASSWORD" \
+		--db=vikala-dev \
+		/tmp/restore/vikala'
+	@docker compose exec -T mongodb rm -rf /tmp/restore
+	@echo "Database restored successfully"
 
 status: ## Show status of all services
 	docker compose ps
