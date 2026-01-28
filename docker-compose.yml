@@ -15,7 +15,7 @@ services:
     networks:
       - vikala-network
     healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/admin --username $$MONGO_ROOT_USERNAME --password $$MONGO_ROOT_PASSWORD --authenticationDatabase admin --quiet
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/admin --username $$MONGO_INITDB_ROOT_USERNAME --password $$MONGO_INITDB_ROOT_PASSWORD --authenticationDatabase admin --quiet
       interval: 10s
       timeout: 5s
       retries: 5
@@ -37,6 +37,7 @@ services:
       - vikala-network
     volumes:
       - ./logs:/app/logs
+      - ./src/keys:/app/src/keys:ro
     depends_on:
       mongodb:
         condition: service_healthy
@@ -59,6 +60,7 @@ services:
     volumes:
       - ./src:/app/src
       - ./logs:/app/logs
+      - ./src/keys:/app/src/keys:ro
       - /app/node_modules
     depends_on:
       mongodb:

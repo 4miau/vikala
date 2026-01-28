@@ -34,9 +34,6 @@ RUN bun install --frozen-lockfile --production
 # Copy built files from builder stage
 COPY --from=builder /app/dist ./dist
 
-# Copy necessary runtime files
-COPY --from=builder /app/src/keys ./src/keys
-
 # Create a non-root user
 RUN addgroup -g 1001 -S vikala && \
     adduser -S -D -H -u 1001 -h /app -s /sbin/nologin -G vikala -g vikala vikala && \

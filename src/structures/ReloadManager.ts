@@ -126,6 +126,14 @@ export default class ReloadManager {
 
 	public async loadNewStructure(structureName: string): Promise<{ success: boolean; message: string }> {
 		try {
+			const validation = this.validateName(structureName, 'structure')
+			if (!validation.valid) {
+				return {
+					success: false,
+					message: validation.error!
+				}
+			}
+
 			if (this.structureBlacklist.has(structureName)) {
 				return {
 					success: false,
