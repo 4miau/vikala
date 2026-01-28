@@ -71,5 +71,5 @@ COPY . .
 # Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
 
-# Start in development mode with hot reload
+# Start in development mode
 CMD ["bun", "run", "dev"]

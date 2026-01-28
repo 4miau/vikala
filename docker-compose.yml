@@ -15,7 +15,7 @@ services:
     networks:
       - vikala-network
     healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/admin --username $$MONGO_ROOT_USERNAME --password $$MONGO_ROOT_PASSWORD --authenticationDatabase admin --quiet
       interval: 10s
       timeout: 5s
       retries: 5

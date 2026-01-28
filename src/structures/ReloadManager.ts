@@ -11,6 +11,14 @@ export default class ReloadManager {
 
 	public async reloadStructure(structureName: string): Promise<{ success: boolean; message: string }> {
 		try {
+			const validation = this.validateName(structureName, 'structure')
+			if (!validation.valid) {
+				return {
+					success: false,
+					message: validation.error!
+				}
+			}
+
 			if (this.structureBlacklist.has(structureName)) {
 				return {
 					success: false,
@@ -65,6 +73,14 @@ export default class ReloadManager {
 
 	public async reloadModel(modelName: string): Promise<{ success: boolean; message: string }> {
 		try {
+			const validation = this.validateName(modelName, 'model')
+			if (!validation.valid) {
+				return {
+					success: false,
+					message: validation.error!
+				}
+			}
+
 			const modelPath = path.join(__dirname, '..', 'database', `${modelName}.ts`)
 			const modelJsPath = path.join(__dirname, '..', 'database', `${modelName}.js`)
 
@@ -153,6 +169,14 @@ export default class ReloadManager {
 
 	public async loadNewModel(modelName: string): Promise<{ success: boolean; message: string }> {
 		try {
+			const validation = this.validateName(modelName, 'model')
+			if (!validation.valid) {
+				return {
+					success: false,
+					message: validation.error!
+				}
+			}
+
 			require(`../database/${modelName}`)
 
 			this.client.logger.info(`✨ Loaded new model: ${modelName}`)
@@ -168,5 +192,27 @@ export default class ReloadManager {
 				message: `Failed to load new model: ${error instanceof Error ? error.message : String(error)}`
 			}
 		}
+	}
+
+	private validateName(name: string, type: 'structure' | 'model'): { valid: boolean; error?: string } {
+		// Only allow alphanumeric characters, underscores, and hyphens
+		const validNamePattern = /^[a-zA-Z0-9_-]+$/
+
+		if (!validNamePattern.test(name)) {
+			return {
+				valid: false,
+				error: `Invalid ${type} name. Only alphanumeric characters, underscores, and hyphens are allowed.`
+			}
+		}
+
+		// Prevent path traversal patterns
+		if (name.includes('..') || name.includes('/') || name.includes('\\')) {
+			return {
+				valid: false,
+				error: `Invalid ${type} name. Path traversal patterns are not allowed.`
+			}
+		}
+
+		return { valid: true }
 	}
 }

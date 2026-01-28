@@ -55,7 +55,7 @@ rebuild: ## Rebuild and restart services
 backup: ## Backup MongoDB database
 	@mkdir -p ./backups
 	docker compose exec mongodb mongodump \
-		--uri="mongodb://admin:changeme@localhost:27017/vikala?authSource=admin" \
+		--uri="mongodb://$${MONGO_ROOT_USERNAME}:$${MONGO_ROOT_PASSWORD}@localhost:27017/$${MONGO_DATABASE:-vikala}?authSource=admin" \
 		--out=/tmp/backup
 	docker cp vikala-mongodb:/tmp/backup ./backups/vikala-$(shell date +%Y%m%d-%H%M%S)
 	@echo "Backup created in ./backups/"
@@ -68,7 +68,7 @@ restore: ## Restore MongoDB database (requires BACKUP_DIR variable)
 	fi
 	docker cp $(BACKUP_DIR) vikala-mongodb:/tmp/restore
 	docker compose exec mongodb mongorestore \
-		--uri="mongodb://admin:changeme@localhost:27017/vikala?authSource=admin" \
+		--uri="mongodb://$${MONGO_ROOT_USERNAME}:$${MONGO_ROOT_PASSWORD}@localhost:27017/$${MONGO_DATABASE:-vikala}?authSource=admin" \
 		/tmp/restore
 
 status: ## Show status of all services
@@ -79,4 +79,4 @@ shell: ## Open shell in bot container
 
 shell-mongodb: ## Open MongoDB shell
 	docker compose exec mongodb mongosh \
-		mongodb://admin:changeme@localhost:27017/vikala?authSource=admin
+		mongodb://$${MONGO_ROOT_USERNAME}:$${MONGO_ROOT_PASSWORD}@localhost:27017/$${MONGO_DATABASE:-vikala}?authSource=admin

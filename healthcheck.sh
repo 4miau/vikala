@@ -2,7 +2,7 @@
 # Health check script for Vikala Docker container
 
 # Check if the bot process is running
-if ! pgrep -f "bun" > /dev/null; then
+if ! pgrep -f "bun.*dist/index" > /dev/null; then
     echo "Bot process not running"
     exit 1
 fi

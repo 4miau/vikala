@@ -141,7 +141,7 @@ export default class Vikala extends SapphireClient {
 	}
 
 	private async _init() {
-		await mongoose.connect(envs.dbServer).then(() => { this.logger.info('Connected to database successfully.') })
+		await mongoose.connect(envs.MONGO_DATABASE_URL).then(() => { this.logger.info('Connected to database successfully.') })
 		const components = new Components(this)
 		await components._loadAll()
 	}
