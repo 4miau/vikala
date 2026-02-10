@@ -216,7 +216,8 @@ export default class Sheets {
 				meh: row['_rawData'][4],
 				disliked: row['_rawData'][5],
 				played: row['_rawData'][6],
-				extras: row['_rawData'][7]
+				replayed: row['_rawData'][7],
+				extras: row['_rawData'][8]
 			}
 		}
 	}
@@ -307,7 +308,8 @@ export default class Sheets {
 			{ row: rowIndex, col: 4, value: gameData.meh === 'TRUE' },
 			{ row: rowIndex, col: 5, value: gameData.disliked === 'TRUE' },
 			{ row: rowIndex, col: 6, value: gameData.played === 'TRUE' },
-			{ row: rowIndex, col: 7, value: gameData.extras }
+			{ row: rowIndex, col: 7, value: gameData.replayed === 'TRUE' },
+			{ row: rowIndex, col: 8, value: gameData.extras }
 		]
 
 		updates.forEach((update) => {
@@ -331,7 +333,10 @@ export default class Sheets {
 
 			const nextEmptyRow = archiveRows[emptyRowIndex].rowNumber - 1
 
-			this.writeGameToArchiveRow(archiveSheet, nextEmptyRow, gameData)
+			const archiveGameData = { ...gameData, replayed: 'FALSE' }
+			delete archiveGameData.seen
+
+			this.writeGameToArchiveRow(archiveSheet, nextEmptyRow, archiveGameData)
 			await archiveSheet.saveUpdatedCells()
 
 			await this.resetCache(librarySheet)
@@ -357,7 +362,10 @@ export default class Sheets {
 
 			const nextEmptyRow = libraryRows[emptyRowIndex].rowNumber - 1
 
-			this.writeGameToLibraryRow(librarySheet, nextEmptyRow, gameData)
+			const libraryGameData = { ...gameData, seen: 'FALSE' }
+			delete libraryGameData.replayed
+
+			this.writeGameToLibraryRow(librarySheet, nextEmptyRow, libraryGameData)
 			await librarySheet.saveUpdatedCells()
 
 			await this.resetCache(archiveSheet)

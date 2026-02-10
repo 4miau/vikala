@@ -257,6 +257,7 @@ export default class EventLogger {
 
 	async editedMessageLog(oldM: Message, newM: Message) {
 		if (!newM.guild || !newM.author || this.isBot(newM.author)) return null
+		if (oldM.content === newM.content) return null
 
 		return this.tryFetch(() =>
 			this.createLogEntry(newM.guild!, this.LOGS[1] as EventActions, 'message', Colors.Yellow, {

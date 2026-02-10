@@ -19,7 +19,8 @@ declare namespace VHS {
 		MEH: 4,
 		DISLIKED: 5,
 		PLAYED: 6,
-		EXTRAS: 7
+		REPLAYED: 7,
+		EXTRAS: 8
 	} as const
 
 	export interface LibraryGameEntry {
@@ -44,6 +45,7 @@ declare namespace VHS {
 		meh: boolean
 		disliked: boolean
 		played: boolean
+		replayed: boolean
 		extras: string
 	}
 

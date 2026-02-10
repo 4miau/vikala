@@ -291,6 +291,7 @@ export class VHSGame extends Subcommand {
 		if (gameData.meh === 'TRUE') reactions.push('😐 Meh')
 		if (gameData.disliked === 'TRUE') reactions.push('👎 Disliked')
 		if (gameData.played === 'TRUE') reactions.push('🎮 Played')
+		if (sheetTitle === 'GAMES ARCHIVE' && gameData.replayed === 'TRUE') reactions.push('🔁 Replayed')
 
 		if (reactions.length > 0) {
 			embed.addFields({ name: 'Status', value: reactions.join(' • '), inline: false })
