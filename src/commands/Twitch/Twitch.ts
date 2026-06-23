@@ -11,9 +11,10 @@ import { Subcommand } from '@sapphire/plugin-subcommands'
 		'Add, remove, and manage Twitch streamers to get notified when they go live. When using add, only the streamer name is required. ' +
 		'Channel and message are optional. If no channel is provided, the current channel will be used. When using message, you can use the keywords `default` ' +
 		'to reset to the default message, and `none` to remove the message entirely (must have embed enabled).',
-	usage: 'twitch <list> | <add|remove|move|message|embed> [options]',
+	usage: 'twitch <list|status> | <add|remove|move|message|embed> [options]',
 	examples: [
 		{ example: 'twitch list', description: 'Lists all tracked Twitch streamers.' },
+		{ example: 'twitch status 4miau', description: 'Shows the status of 4miau\'s stream (live or offline).' },
 		{ example: 'twitch add 4miau', description: 'Adds 4miau as a tracked streamer with default settings.' },
 		{
 			example: 'twitch add 4miau #general Welcome to the stream!',
@@ -28,6 +29,7 @@ import { Subcommand } from '@sapphire/plugin-subcommands'
 	runIn: ['GUILD_ANY'],
 	subcommands: [
 		{ name: 'list', messageRun: 'twitchMsgList', chatInputRun: 'twitchInputList', default: true },
+		{ name: 'status', messageRun: 'twitchMsgStatus', chatInputRun: 'twitchInputStatus' },
 		{ name: 'add', messageRun: 'twitchMsgAdd', chatInputRun: 'twitchInputAdd', requiredUserPermissions: ['ManageGuild'] },
 		{ name: 'remove', messageRun: 'twitchMsgRemove', chatInputRun: 'twitchInputRemove', requiredUserPermissions: ['ManageGuild'] },
 		{ name: 'move', messageRun: 'twitchMsgMove', chatInputRun: 'twitchInputMove', requiredUserPermissions: ['ManageGuild'] },
@@ -45,6 +47,16 @@ export class Twitch extends Subcommand {
 
 	twitchInputList(interaction: Subcommand.ChatInputCommandInteraction) {
 		return this.handleList(interaction.guild, (content) => interaction.reply(content))
+	}
+
+	twitchMsgStatus(message: Message, args: Args) {
+		if (!message.channel.isSendable()) return
+
+		return this.handleStatus(args, (content) => (message.channel as TextChannel).send(content))
+	}
+
+	twitchInputStatus(interaction: Subcommand.ChatInputCommandInteraction) {
+		return this.handleStatus(interaction.options, (content) => interaction.reply(content))
 	}
 
 	async twitchMsgAdd(message: Message, args: Args) {
@@ -134,6 +146,25 @@ export class Twitch extends Subcommand {
 		if (!embed) {
 			return sendFn({ content: 'No streamers are currently being tracked.', flags: ['Ephemeral'] })
 		}
+		return sendFn({ embeds: [embed] })
+	}
+
+	private async handleStatus(options: any, sendFn: (content: any) => Promise<any>) {
+		const name = options.getString('name', true)
+		const status = await this.client.twitch.getStreamerStatus(name)
+		if (!status) {
+			return sendFn({ content: 'Failed to fetch streamer status.', flags: ['Ephemeral'] })
+		}
+
+		const embed = new EmbedBuilder()
+			.setAuthor({ name: name, url: `https://twitch.tv/${name}` })
+			.setTitle('Streamer Status')
+			.addFields(
+				{ name: 'Live', value: status.is_live ? 'Yes' : 'No', inline: true },
+				{ name: 'Message Posted?', value: status.msg ? 'Last stream has been posted' : 'Last stream has not yet been posted', inline: true },
+				{ name: 'Stream Info', value: status.stream ? `[${status.stream.title}](https://twitch.tv/${name})` : 'No stream info available', inline: false }
+			)
+
 		return sendFn({ embeds: [embed] })
 	}
 
