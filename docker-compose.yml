@@ -23,7 +23,7 @@ services:
 
   # Vikala Bot - Production
   bot-prod:
-    image: vikala
+    image: vikala:prod
     build:
       context: .
       dockerfile: Dockerfile
@@ -44,7 +44,7 @@ services:
 
   # Vikala Bot - Development (default)
   bot:
-    image: vikala
+    image: vikala:dev
     build:
       context: .
       dockerfile: Dockerfile
