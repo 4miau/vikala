@@ -329,6 +329,21 @@ export class ChangelogCommand extends Subcommand {
 								.setDescription('ID of the changelog entry to view')
 								.setRequired(true))
 				)
+				.addSubcommand((subcommand) =>
+					subcommand
+						.setName('list')
+						.setDescription('List all changelog entries')
+				)
+				.addSubcommand((subcommand) =>
+					subcommand
+						.setName('remove')
+						.setDescription('Remove a specific changelog entry')
+						.addNumberOption((option) =>
+							option
+								.setName('id')
+								.setDescription('ID of the changelog entry to remove')
+								.setRequired(true))
+				)
 		)
 	}
 }
