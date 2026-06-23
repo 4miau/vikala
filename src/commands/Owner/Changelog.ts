@@ -166,7 +166,7 @@ export class ChangelogCommand extends Subcommand {
 					{ name: 'Title', value: entry.title },
 					{ name: 'Description', value: entry.description }
 				)
-				.setFooter({ text: `Added by ${username}` })
+				.setFooter({ text: `Added by ${username} | v0.1 (Prod)` })
 				.setTimestamp()
 
 			return sendFn({ embeds: [embed] })
