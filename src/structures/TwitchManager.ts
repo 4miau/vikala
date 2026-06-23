@@ -111,8 +111,7 @@ export default class TwitchManager {
 		const streamer = await this.getTwitchUser(name)
 		if (!streamer) return null
 
-		const guilds = this.client.guilds.cache.values()
-		for (const guild of guilds) {
+		for (const guild of this.client.guilds.cache.values()) {
 			const streamers = this.listStreamers(guild)
 			const foundStreamer = streamers.find((s) => s.id === streamer.id)
 			if (foundStreamer) return foundStreamer
@@ -322,9 +321,15 @@ export default class TwitchManager {
 
 	// HELPERS
 
-	async getStreamerStatus(name: string): Promise<{ is_live: boolean; msg: Message | null; stream: TwitchStream | null }> {
+	async getStreamerStatus(name: string): Promise<{ is_live: boolean; msg: Message<boolean> | null; stream?: TwitchStream | null }> {
+		const default_response = { is_live: false, msg: null, stream: null }
+		const isLive = await this.isLive(name)
+		if (!isLive) return default_response
+
+
 		const stream = await this.getStream(name)
-		if (!stream) return { is_live: false, msg: null, stream: null }
+		const streamer = await this.getStreamer(name)
+		if (!streamer) return default_response
 
 		const trackedStreamer = await this.getStreamer(name)
 		if (!trackedStreamer?.guildId) return { is_live: true, msg: null, stream }
