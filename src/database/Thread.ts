@@ -88,4 +88,6 @@ const ThreadSchema = new Schema<IThread>({
 	]
 })
 
-export default model<IThread>('Thread', ThreadSchema, 'threads')
+const Thread: Model<IThread> = model<IThread>('Thread', ThreadSchema, 'threads')
+
+export default Thread
