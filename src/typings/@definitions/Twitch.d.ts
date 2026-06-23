@@ -65,6 +65,7 @@ declare type Streamer = {
 	name: string
 	message: string
 	channel: string
+	guildId: string
 	embed: boolean
 	posted: boolean
 	postedMessageId: string

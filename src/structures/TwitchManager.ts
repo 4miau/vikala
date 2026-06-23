@@ -1,4 +1,4 @@
-import { EmbedBuilder, Guild } from 'discord.js'
+import { EmbedBuilder, Guild, Message } from 'discord.js'
 import ms from 'ms'
 
 import Vikala from '../client/vikala'
@@ -21,8 +21,8 @@ export default class TwitchManager {
 		try {
 			await this.manageTokens()
 
-			setInterval(() => this.isLive().catch(() => {}), ms('5m'))
-			setInterval(() => this.isNotLive().catch(() => {}), ms('10m'))
+			setInterval(() => this.postStreams().catch(() => {}), ms('5m'))
+			setInterval(() => this.checkStreamersOffline().catch(() => {}), ms('10m'))
 			setInterval(() => this.manageTokens().catch(() => {}), ms('1h'))
 			setInterval(() => this.updateAllStreamers().catch(() => {}), ms('1d'))
 		} catch (err) {
@@ -64,10 +64,6 @@ export default class TwitchManager {
 		}
 	}
 
-	checkForPremium(guild: Guild): boolean {
-		return this.client.settings.get(guild, 'premium', false)
-	}
-
 	async getStream(name: string): Promise<TwitchStream | null> {
 		try {
 			const request = this.createApiRequest('streams', { user_login: name })
@@ -101,7 +97,7 @@ export default class TwitchManager {
 		}
 	}
 
-	async getStreamer(name: string): Promise<TwitchUser | null> {
+	async getTwitchUser(name: string): Promise<TwitchUser | null> {
 		try {
 			const request = this.createApiRequest('search/channels', { query: name })
 			const response = await this.client.api.set(request).call()
@@ -111,10 +107,24 @@ export default class TwitchManager {
 		}
 	}
 
+	async getStreamer(name: string): Promise<Streamer | null> {
+		const streamer = await this.getTwitchUser(name)
+		if (!streamer) return null
+
+		const guilds = this.client.guilds.cache.values()
+		for (const guild of guilds) {
+			const streamers = this.listStreamers(guild)
+			const foundStreamer = streamers.find((s) => s.id === streamer.id)
+			if (foundStreamer) return foundStreamer
+		}
+
+		return null
+	}
+
 	async addStreamer(name: string, guild: string | Guild, channel?: string, msg?: string): Promise<boolean> {
 		if (!name?.trim()) return false
 
-		const streamer = await this.getStreamer(name.trim())
+		const streamer = await this.getTwitchUser(name.trim())
 		if (!streamer) return false
 
 		const streamers = this.listStreamers(guild)
@@ -125,6 +135,7 @@ export default class TwitchManager {
 			name: streamer.broadcaster_login,
 			message: msg || defaultStreamMessage,
 			channel: channel || null,
+			guildId: typeof guild === 'string' ? guild : guild.id,
 			embed: true,
 			posted: false,
 			postedMessageId: null,
@@ -141,7 +152,7 @@ export default class TwitchManager {
 	async removeStreamer(name: string, guild: string | Guild): Promise<boolean> {
 		if (!name?.trim()) return false
 
-		const streamer = await this.getStreamer(name.trim())
+		const streamer = await this.getTwitchUser(name.trim())
 		if (!streamer) return false
 
 		const streamers = this.listStreamers(guild)
@@ -212,7 +223,7 @@ export default class TwitchManager {
 		}
 	}
 
-	async isLive(): Promise<void> {
+	async postStreams(): Promise<void> {
 		const guilds = this.client.guilds.cache.values()
 
 		for (const guild of guilds) {
@@ -222,9 +233,10 @@ export default class TwitchManager {
 			for (const streamer of streamers) {
 				try {
 					if (streamer.posted || (streamer.lastPosted && Date.now() - streamer.lastPosted < ms('5m'))) continue
-					const stream = await this.getStream(streamer.name)
-					if (!stream) continue
+					const isLive = await this.isLive(streamer.name)
+					if (!isLive) continue
 
+					const stream = await this.getStream(streamer.name)
 					const channel = guild.channels.cache.get(streamer.channel)
 					if (!channel?.isSendable()) continue
 
@@ -256,7 +268,7 @@ export default class TwitchManager {
 		}
 	}
 
-	async isNotLive(): Promise<void> {
+	async checkStreamersOffline(): Promise<void> {
 		const guilds = this.client.guilds.cache.values()
 
 		for (const guild of guilds) {
@@ -308,8 +320,30 @@ export default class TwitchManager {
 		}
 	}
 
-	listStreamers(guild: string | Guild): Streamer[] {
-		return this.client.settings.get(guild, 'streamers', [])
+	// HELPERS
+
+	async getStreamerStatus(name: string): Promise<{ is_live: boolean; msg: Message<boolean>; stream?: TwitchStream | null }> {
+		const isLive = await this.isLive(name)
+		if (!isLive) return { is_live: false, msg: null, stream: null }
+
+
+		const stream = await this.getStream(name)
+		const streamer = await this.getStreamer(name)
+
+		const msg = stream ? await this.fetchPostedMessage(streamer, this.client.guilds.cache.get(streamer.guildId)) : null
+		return { is_live: !!stream, msg: msg, stream }
+	}
+
+	async fetchPostedMessage(streamer: Streamer, guild: Guild): Promise<Message | null> {
+		if (!streamer.postedMessageId) return null
+		const channel = guild.channels.cache.get(streamer.channel)
+		if (!channel?.isSendable()) return null
+		try {
+			return await channel.messages.fetch({ message: streamer.postedMessageId, force: true })
+		} catch {
+			this.modifyStreamer(streamer.name, guild, { posted: false, postedMessageId: null })
+			return null
+		}
 	}
 
 	listStreamersEmbed(guild: string | Guild): EmbedBuilder | null {
@@ -321,5 +355,18 @@ export default class TwitchManager {
 			.join('\n')
 
 		return new EmbedBuilder().setTitle('Tracked Twitch Streamers').setDescription(description)
+	}
+
+	checkForPremium(guild: Guild): boolean {
+		return this.client.settings.get(guild, 'premium', false)
+	}
+
+	async isLive(name: string): Promise<boolean> {
+		const stream = await this.getStream(name)
+		return !!stream
+	}
+
+	listStreamers(guild: string | Guild): Streamer[] {
+		return this.client.settings.get(guild, 'streamers', [])
 	}
 }
