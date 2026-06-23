@@ -322,16 +322,16 @@ export default class TwitchManager {
 
 	// HELPERS
 
-	async getStreamerStatus(name: string): Promise<{ is_live: boolean; msg: Message<boolean>; stream?: TwitchStream | null }> {
-		const isLive = await this.isLive(name)
-		if (!isLive) return { is_live: false, msg: null, stream: null }
-
-
+	async getStreamerStatus(name: string): Promise<{ is_live: boolean; msg: Message | null; stream: TwitchStream | null }> {
 		const stream = await this.getStream(name)
-		const streamer = await this.getStreamer(name)
+		if (!stream) return { is_live: false, msg: null, stream: null }
 
-		const msg = stream ? await this.fetchPostedMessage(streamer, this.client.guilds.cache.get(streamer.guildId)) : null
-		return { is_live: !!stream, msg: msg, stream }
+		const trackedStreamer = await this.getStreamer(name)
+		if (!trackedStreamer?.guildId) return { is_live: true, msg: null, stream }
+
+		const guild = this.client.guilds.cache.get(trackedStreamer.guildId)
+		const msg = guild ? await this.fetchPostedMessage(trackedStreamer, guild) : null
+		return { is_live: true, msg, stream }
 	}
 
 	async fetchPostedMessage(streamer: Streamer, guild: Guild): Promise<Message | null> {
