@@ -11,9 +11,10 @@ import { Subcommand } from '@sapphire/plugin-subcommands'
 		'Add, remove, and manage Twitch streamers to get notified when they go live. When using add, only the streamer name is required. ' +
 		'Channel and message are optional. If no channel is provided, the current channel will be used. When using message, you can use the keywords `default` ' +
 		'to reset to the default message, and `none` to remove the message entirely (must have embed enabled).',
-	usage: 'twitch <list> | <add|remove|move|message|embed> [options]',
+	usage: 'twitch <list|status> | <add|remove|move|message|embed> [options]',
 	examples: [
 		{ example: 'twitch list', description: 'Lists all tracked Twitch streamers.' },
+		{ example: 'twitch status 4miau', description: 'Shows the status of 4miau\'s stream (live or offline).' },
 		{ example: 'twitch add 4miau', description: 'Adds 4miau as a tracked streamer with default settings.' },
 		{
 			example: 'twitch add 4miau #general Welcome to the stream!',
@@ -28,6 +29,7 @@ import { Subcommand } from '@sapphire/plugin-subcommands'
 	runIn: ['GUILD_ANY'],
 	subcommands: [
 		{ name: 'list', messageRun: 'twitchMsgList', chatInputRun: 'twitchInputList', default: true },
+		{ name: 'status', messageRun: 'twitchMsgStatus', chatInputRun: 'twitchInputStatus' },
 		{ name: 'add', messageRun: 'twitchMsgAdd', chatInputRun: 'twitchInputAdd', requiredUserPermissions: ['ManageGuild'] },
 		{ name: 'remove', messageRun: 'twitchMsgRemove', chatInputRun: 'twitchInputRemove', requiredUserPermissions: ['ManageGuild'] },
 		{ name: 'move', messageRun: 'twitchMsgMove', chatInputRun: 'twitchInputMove', requiredUserPermissions: ['ManageGuild'] },
@@ -45,6 +47,16 @@ export class Twitch extends Subcommand {
 
 	twitchInputList(interaction: Subcommand.ChatInputCommandInteraction) {
 		return this.handleList(interaction.guild, (content) => interaction.reply(content))
+	}
+
+	twitchMsgStatus(message: Message, args: Args) {
+		if (!message.channel.isSendable()) return
+
+		return this.handleStatus(args, (content) => (message.channel as TextChannel).send(content))
+	}
+
+	twitchInputStatus(interaction: Subcommand.ChatInputCommandInteraction) {
+		return this.handleStatus(interaction.options, (content) => interaction.reply(content))
 	}
 
 	async twitchMsgAdd(message: Message, args: Args) {
@@ -137,11 +149,37 @@ export class Twitch extends Subcommand {
 		return sendFn({ embeds: [embed] })
 	}
 
+	private async handleStatus(options: any, sendFn: (content: any) => Promise<any>) {
+		const isInteraction = typeof options?.getString === 'function'
+		const name = isInteraction
+			? options.getString('name', true)
+			: await options.pickResult('string').then((res: any) => (res.isOk() ? res.unwrap() : null))
+
+		if (!name) {
+			return sendFn(isInteraction ? { content: 'You must provide a streamer name.', flags: ['Ephemeral'] } : { content: 'You must provide a streamer name.' })
+		}
+
+		try {
+			const status = await this.client.twitch.getStreamerStatus(name)
+
+			const embed = new EmbedBuilder()
+				.setAuthor({ name: name, url: `https://twitch.tv/${name}` })
+				.setTitle('Streamer Status')
+				.addFields(
+					{ name: 'Live', value: status.is_live ? 'Yes' : 'No', inline: true },
+					{ name: 'Message Posted?', value: status.msg ? 'Last stream has been posted' : 'Last stream has not yet been posted', inline: true },
+					{ name: 'Stream Info', value: status.stream ? `[${status.stream.title}](https://twitch.tv/${name})` : 'No stream info available', inline: false }
+				)
+
+			return sendFn({ embeds: [embed] })
+		} catch {
+			return sendFn(isInteraction ? { content: 'Failed to fetch streamer status.', flags: ['Ephemeral'] } : { content: 'Failed to fetch streamer status.' })
+		}
+	}
+
 	private async handleAdd(name: string, guild: any, channelId: string, message: string | null, sendFn: (content: any) => Promise<any>) {
 		const success = await this.client.twitch.addStreamer(name, guild, channelId, message)
-		if (!success) {
-			return sendFn({ content: 'Failed to add streamer.', flags: ['Ephemeral'] })
-		}
+		if (!success) return sendFn({ content: 'Failed to add streamer.', flags: ['Ephemeral'] })
 
 		const embed = new EmbedBuilder()
 			.setAuthor({ name: name, url: `https://twitch.tv/${name}` })
@@ -152,14 +190,10 @@ export class Twitch extends Subcommand {
 	}
 
 	private async handleRemove(name: string, guild: any, sendFn: (content: any) => Promise<any>) {
-		if (!name) {
-			return sendFn({ content: 'You must provide a streamer name to remove.', flags: ['Ephemeral'] })
-		}
+		if (!name) return sendFn({ content: 'You must provide a streamer name to remove.', flags: ['Ephemeral'] })
 
 		const success = await this.client.twitch.removeStreamer(name, guild)
-		if (!success) {
-			return sendFn({ content: 'Failed to remove streamer.', flags: ['Ephemeral'] })
-		}
+		if (!success) return sendFn({ content: 'Failed to remove streamer.', flags: ['Ephemeral'] })
 
 		const embed = new EmbedBuilder().setTitle(`${name} removed`).setDescription('Notifications will no longer be posted.')
 
@@ -167,14 +201,10 @@ export class Twitch extends Subcommand {
 	}
 
 	private async handleMove(name: string, guild: any, channelId: string, sendFn: (content: any) => Promise<any>) {
-		if (!name) {
-			return sendFn({ content: 'You must provide a streamer name to move.', flags: ['Ephemeral'] })
-		}
+		if (!name) return sendFn({ content: 'You must provide a streamer name to move.', flags: ['Ephemeral'] })
 
 		const success = this.client.twitch.moveStreamer(name, guild, channelId)
-		if (!success) {
-			return sendFn({ content: 'Failed to move streamer notifications.', flags: ['Ephemeral'] })
-		}
+		if (!success) return sendFn({ content: 'Failed to move streamer notifications.', flags: ['Ephemeral'] })
 
 		const embed = new EmbedBuilder().setTitle(`${name} moved`).setDescription(`Notifications will now be sent to <#${channelId}>.`)
 
@@ -182,17 +212,11 @@ export class Twitch extends Subcommand {
 	}
 
 	private async handleMessage(name: string, guild: any, message: string, sendFn: (content: any) => Promise<any>) {
-		if (!name) {
-			return sendFn({ content: 'You must provide a streamer name to set the message for.', flags: ['Ephemeral'] })
-		}
-		if (!message) {
-			return sendFn({ content: 'You must provide a valid message.', flags: ['Ephemeral'] })
-		}
+		if (!name) return sendFn({ content: 'You must provide a streamer name to set the message for.', flags: ['Ephemeral'] })
+		if (!message) return sendFn({ content: 'You must provide a valid message.', flags: ['Ephemeral'] })
 
 		const success = this.client.twitch.modifyStreamer(name, guild, { message })
-		if (!success) {
-			return sendFn({ content: 'Failed to set stream message.', flags: ['Ephemeral'] })
-		}
+		if (!success) return sendFn({ content: 'Failed to set stream message.', flags: ['Ephemeral'] })
 
 		const embed = new EmbedBuilder().setTitle(`Stream message updated for ${name}`)
 
@@ -238,6 +262,17 @@ export class Twitch extends Subcommand {
 					sub
 						.setName('list')
 						.setDescription('List all streamers being tracked')
+				)
+				.addSubcommand((sub) =>
+					sub
+						.setName('status')
+						.setDescription('Get the status of a streamer')
+						.addStringOption((option) =>
+							option
+								.setName('name')
+								.setDescription('The name of the streamer to check the status of')
+								.setRequired(true)
+						)
 				)
 				.addSubcommand((sub) =>
 					sub
