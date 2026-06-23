@@ -265,6 +265,17 @@ export class Twitch extends Subcommand {
 				)
 				.addSubcommand((sub) =>
 					sub
+						.setName('status')
+						.setDescription('Get the status of a streamer')
+						.addStringOption((option) =>
+							option
+								.setName('name')
+								.setDescription('The name of the streamer to check the status of')
+								.setRequired(true)
+						)
+				)
+				.addSubcommand((sub) =>
+					sub
 						.setName('add')
 						.setDescription('Add a streamer to track')
 						.addStringOption((option) =>
