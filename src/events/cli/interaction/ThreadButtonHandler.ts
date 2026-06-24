@@ -1,7 +1,6 @@
 import { Listener } from '@sapphire/framework'
 import { ApplyOptions } from '@sapphire/decorators'
-import { Events, Interaction, ButtonInteraction, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from 'discord.js'
-import { Colors } from '../../../lib/util/Colors'
+import { Events, Interaction, ButtonInteraction } from 'discord.js'
 
 @ApplyOptions<Listener.Options>({
 	event: Events.InteractionCreate

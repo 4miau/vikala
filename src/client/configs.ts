@@ -20,6 +20,7 @@ import RoleGroupManager from '../structures/RoleGroupManager'
 import ReloadManager from '../structures/ReloadManager'
 import ThreadManager from '../structures/ThreadManager'
 import ChannelSnapshotManager from '../structures/ChannelSnapshotManager'
+import VerificationManager from '../structures/VerificationManager'
 
 export default class Components {
 	client: Vikala
@@ -90,6 +91,8 @@ export default class Components {
 
 		this.client.channelSnapshots = new ChannelSnapshotManager(this.client)
 		await this.client.channelSnapshots._init()
+
+		this.client.verification = new VerificationManager(this.client)
 
 		this.client.reloadManager = new ReloadManager(this.client)
 	}
