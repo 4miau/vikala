@@ -86,8 +86,8 @@ export default class ReminderManager {
 
 		for (const reminder of due) {
 			// Update/delete the DB record first to prevent double-firing on the next poll
-			if (reminder.repeat) {
-				const duration = ms(reminder.repeat as string)
+			if (reminder.repeat && typeof reminder.repeat === 'string') {
+				const duration = ms(reminder.repeat as Parameters<typeof ms>[0])
 				if (typeof duration === 'number' && duration > 0) {
 					await Reminder.updateOne({ _id: reminder._id }, { triggerAt: new Date(Date.now() + duration) })
 				} else {

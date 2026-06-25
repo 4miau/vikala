@@ -434,7 +434,12 @@ export default class AutomodManager {
 
 		await AutomodConfig.create({ guildId })
 
-		const defaultRules = [
+		const defaultRules: Array<{
+			type: IAutomodRule['type']
+			punishment: IAutomodRule['punishment']
+			threshold?: number
+			warningsBeforeAction: number
+		}> = [
 			{ type: 'bad_words', punishment: 'warn', warningsBeforeAction: 3 },
 			{ type: 'caps', punishment: 'warn', threshold: 70, warningsBeforeAction: 2 },
 			{ type: 'spam', punishment: 'mute', threshold: 5, warningsBeforeAction: 1 },
