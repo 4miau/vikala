@@ -94,7 +94,7 @@ export default class Components {
 		await this.client.channelSnapshots._init()
 
 		this.client.verification = new VerificationManager(this.client)
-    
+
 		this.client.reminders = new ReminderManager(this.client)
 		await this.client.reminders._init()
 
