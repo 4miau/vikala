@@ -46,6 +46,7 @@ declare type YouTubeChannel = {
 	channel: string
 	guildId: string
 	embed: boolean
+	includeStreams: boolean
 	lastVideoId: string | null
 	lastPosted: number | null
 }

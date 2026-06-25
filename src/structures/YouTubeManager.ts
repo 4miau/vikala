@@ -65,6 +65,29 @@ export default class YouTubeManager {
 		}
 	}
 
+	async checkVideoTypes(videoIds: string[]): Promise<Map<string, string>> {
+		if (videoIds.length === 0) return new Map()
+
+		try {
+			const request = this.createApiRequest('videos', {
+				part: 'liveStreamingDetails',
+				id: videoIds.join(',')
+			})
+			const response = await this.client.api.set(request).call()
+
+			const typeMap = new Map<string, string>()
+			for (const item of response.items || []) {
+				// liveBroadcastContent values: 'none' (regular video), 'live', 'upcoming', 'completed'
+				const broadcastType = item.liveStreamingDetails?.liveBroadcastContent || 'none'
+				typeMap.set(item.id, broadcastType)
+			}
+			return typeMap
+		} catch {
+			// On error, assume all videos are regular videos
+			return new Map(videoIds.map((id) => [id, 'none']))
+		}
+	}
+
 	async addChannel(handle: string, guild: string | Guild, channelId: string, msg?: string): Promise<boolean> {
 		if (!handle?.trim()) return false
 
@@ -85,6 +108,7 @@ export default class YouTubeManager {
 			channel: channelId,
 			guildId: typeof guild === 'string' ? guild : guild.id,
 			embed: true,
+			includeStreams: false,
 			lastVideoId: null,
 			lastPosted: null
 		}
@@ -149,9 +173,16 @@ export default class YouTubeManager {
 					}
 
 					const lastIndex = videos.findIndex((v) => v.resourceId.videoId === ytChannel.lastVideoId)
-					const newVideos = lastIndex === -1 ? videos : videos.slice(0, lastIndex)
-					if (arrayEmpty(newVideos)) continue
+				let newVideos = lastIndex === -1 ? videos : videos.slice(0, lastIndex)
+				if (arrayEmpty(newVideos)) continue
 
+				// Filter out streams if includeStreams is false
+				if (!ytChannel.includeStreams) {
+					const videoIds = newVideos.map((v) => v.resourceId.videoId)
+					const videoTypes = await this.checkVideoTypes(videoIds)
+					newVideos = newVideos.filter((v) => videoTypes.get(v.resourceId.videoId) === 'none')
+					if (arrayEmpty(newVideos)) continue
+				}
 					const discordChannel = guild.channels.cache.get(ytChannel.channel)
 					if (!discordChannel?.isSendable()) continue
 
