@@ -113,8 +113,7 @@ export default class TwitchManager {
 		const streamer = await this.getTwitchUser(name)
 		if (!streamer) return null
 
-		const guilds = this.client.guilds.cache.values()
-		for (const guild of guilds) {
+		for (const guild of this.client.guilds.cache.values()) {
 			const streamers = this.listStreamers(guild)
 			const foundStreamer = streamers.find((s) => s.id === streamer.id)
 			if (foundStreamer) return foundStreamer
@@ -360,6 +359,19 @@ export default class TwitchManager {
 		return new EmbedBuilder()
 			.setTitle('Tracked Twitch Streamers')
 			.setDescription(description)
+	}
+
+	checkForPremium(guild: Guild): boolean {
+		return this.client.settings.get(guild, 'premium', false)
+	}
+
+	async isLive(name: string): Promise<boolean> {
+		const stream = await this.getStream(name)
+		return !!stream
+	}
+
+	listStreamers(guild: string | Guild): Streamer[] {
+		return this.client.settings.get(guild, 'streamers', [])
 	}
 
 	checkForPremium(guild: Guild): boolean {

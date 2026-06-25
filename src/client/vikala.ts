@@ -35,6 +35,8 @@ import RoleGroupManager from '../structures/RoleGroupManager'
 import ReloadManager from '../structures/ReloadManager'
 import ThreadManager from '../structures/ThreadManager'
 import ChannelSnapshotManager from '../structures/ChannelSnapshotManager'
+import VerificationManager from '../structures/VerificationManager'
+import ReminderManager from '../structures/ReminderManager'
 
 declare module '@sapphire/framework' {
 	interface SapphireClient {
@@ -61,6 +63,8 @@ declare module '@sapphire/framework' {
 		youtube: YouTubeManager
 		threads: ThreadManager
 		channelSnapshots: ChannelSnapshotManager
+		verification: VerificationManager
+		reminders: ReminderManager
 		api: APIManager
 		queue: Queue
 		reloadManager: ReloadManager
@@ -97,6 +101,8 @@ export default class Vikala extends SapphireClient {
 	youtube: YouTubeManager
 	threads: ThreadManager
 	channelSnapshots: ChannelSnapshotManager
+	verification: VerificationManager
+	reminders: ReminderManager
 	api: APIManager
 	queue: Queue
 	reloadManager: ReloadManager

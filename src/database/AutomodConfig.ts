@@ -120,14 +120,12 @@ const automodRuleSchema = new Schema(
 
 automodRuleSchema.index({ guildId: 1, type: 1 }, { unique: true })
 
-automodConfigSchema.pre('save', function (next) {
+automodConfigSchema.pre('save', function (this: IAutomodConfig) {
 	this.updatedAt = new Date()
-	next()
 })
 
-automodRuleSchema.pre('save', function (next) {
+automodRuleSchema.pre('save', function (this: IAutomodRule) {
 	this.updatedAt = new Date()
-	next()
 })
 
 const AutomodConfig = mongoose.model<IAutomodConfig>('AutomodConfig', automodConfigSchema)

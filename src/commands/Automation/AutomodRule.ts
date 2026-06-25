@@ -50,7 +50,7 @@ export class AutomodRuleCommand extends Subcommand {
 			return message.channel.send(`❌ Usage: \`rule enable <${this.RULE_TYPES.join('|')}>\``)
 		}
 
-		const type = ruleType.unwrap().toLowerCase()
+		const type = ruleType.unwrap().toLowerCase() as IAutomodRule['type']
 		if (!this.RULE_TYPES.includes(type)) {
 			return message.channel.send(`❌ Invalid rule type. Valid types: ${this.RULE_TYPES.join(', ')}`)
 		}
@@ -73,7 +73,7 @@ export class AutomodRuleCommand extends Subcommand {
 	public async chatInputEnable(interaction: Subcommand.ChatInputCommandInteraction) {
 		if (!interaction.guild) return
 
-		const type = interaction.options.getString('type', true)
+		const type = interaction.options.getString('type', true) as IAutomodRule['type']
 
 		const rule = await AutomodRule.findOne({ guildId: interaction.guild.id, type })
 		if (!rule) {
@@ -98,7 +98,7 @@ export class AutomodRuleCommand extends Subcommand {
 			return message.channel.send(`❌ Usage: \`rule disable <${this.RULE_TYPES.join('|')}>\``)
 		}
 
-		const type = ruleType.unwrap().toLowerCase()
+		const type = ruleType.unwrap().toLowerCase() as IAutomodRule['type']
 		if (!this.RULE_TYPES.includes(type)) {
 			return message.channel.send(`❌ Invalid rule type. Valid types: ${this.RULE_TYPES.join(', ')}`)
 		}
@@ -121,7 +121,7 @@ export class AutomodRuleCommand extends Subcommand {
 	public async chatInputDisable(interaction: Subcommand.ChatInputCommandInteraction) {
 		if (!interaction.guild) return
 
-		const type = interaction.options.getString('type', true)
+		const type = interaction.options.getString('type', true) as IAutomodRule['type']
 
 		const rule = await AutomodRule.findOne({ guildId: interaction.guild.id, type })
 		if (!rule) {
@@ -149,7 +149,7 @@ export class AutomodRuleCommand extends Subcommand {
 			return message.channel.send('❌ Usage: `rule set <type> <property> <value>`\nProperties: `punishment`, `threshold`, `warnings`, `duration`')
 		}
 
-		const type = ruleType.unwrap().toLowerCase()
+		const type = ruleType.unwrap().toLowerCase() as IAutomodRule['type']
 		const prop = property.unwrap().toLowerCase()
 		const val = value.unwrap()
 
@@ -173,7 +173,7 @@ export class AutomodRuleCommand extends Subcommand {
 	public async chatInputSet(interaction: Subcommand.ChatInputCommandInteraction) {
 		if (!interaction.guild) return
 
-		const type = interaction.options.getString('type', true)
+		const type = interaction.options.getString('type', true) as IAutomodRule['type']
 		const property = interaction.options.getString('property', true)
 		const value = interaction.options.getString('value', true)
 
@@ -198,7 +198,7 @@ export class AutomodRuleCommand extends Subcommand {
 			return message.channel.send(`❌ Usage: \`rule info <${this.RULE_TYPES.join('|')}>\``)
 		}
 
-		const type = ruleType.unwrap().toLowerCase()
+		const type = ruleType.unwrap().toLowerCase() as IAutomodRule['type']
 		if (!this.RULE_TYPES.includes(type)) {
 			return message.channel.send(`❌ Invalid rule type. Valid types: ${this.RULE_TYPES.join(', ')}`)
 		}
@@ -215,7 +215,7 @@ export class AutomodRuleCommand extends Subcommand {
 	public async chatInputInfo(interaction: Subcommand.ChatInputCommandInteraction) {
 		if (!interaction.guild) return
 
-		const type = interaction.options.getString('type', true)
+		const type = interaction.options.getString('type', true) as IAutomodRule['type']
 
 		const rule = await AutomodRule.findOne({ guildId: interaction.guild.id, type })
 		if (!rule) {
@@ -241,7 +241,7 @@ export class AutomodRuleCommand extends Subcommand {
 			return message.channel.send('❌ Please specify a rule type (currently only bad_words supported)')
 		}
 
-		const type = ruleType.unwrap().toLowerCase()
+		const type = ruleType.unwrap().toLowerCase() as IAutomodRule['type']
 		if (type !== 'bad_words') return message.channel.send('❌ Blacklist management is only available for bad_words rule')
 
 		const rule = await AutomodRule.findOne({ guildId: message.guild.id, type })
@@ -277,7 +277,7 @@ export class AutomodRuleCommand extends Subcommand {
 		if (!interaction.guild) return
 
 		const action = interaction.options.getString('action', true)
-		const type = interaction.options.getString('type', true)
+		const type = interaction.options.getString('type', true) as IAutomodRule['type']
 
 		if (type !== 'bad_words') {
 			return interaction.reply({ content: '❌ Blacklist management is only available for bad_words rule', flags: ['Ephemeral'] })

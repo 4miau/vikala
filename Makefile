@@ -1,4 +1,4 @@
-.PHONY: help build up down restart logs logs-mongodb clean dev prod rebuild backup
+.PHONY: help build up down restart logs logs-mongodb clean dev prod rebuild rebuild-prod backup
 
 help: ## Show this help message
 	@echo 'Usage: make [target]'
@@ -51,6 +51,11 @@ rebuild: ## Rebuild and restart services
 	docker compose down
 	docker compose build --no-cache
 	docker compose up -d
+
+rebuild-prod: ## Rebuild and restart production services
+	docker compose --profile prod down
+	docker compose --profile prod build --no-cache
+	docker compose --profile prod up -d bot-prod
 
 backup: ## Backup MongoDB database
 	@mkdir -p ./backups

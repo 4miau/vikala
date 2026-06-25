@@ -242,9 +242,8 @@ groupRoleSchema.index({ groupId: 1, roleId: 1 }, { unique: true })
 roleMenuSchema.index({ guildId: 1, messageId: 1 }, { unique: true })
 temporaryRoleSchema.index({ guildId: 1, userId: 1, roleId: 1 })
 
-roleGroupSchema.pre('save', function (next) {
+roleGroupSchema.pre('save', function (this: IRoleGroup) {
 	this.updatedAt = new Date()
-	next()
 })
 
 const RoleGroup = mongoose.model<IRoleGroup>('RoleGroup', roleGroupSchema)
