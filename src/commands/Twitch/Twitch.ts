@@ -34,7 +34,8 @@ import { Subcommand } from '@sapphire/plugin-subcommands'
 		{ name: 'remove', messageRun: 'twitchMsgRemove', chatInputRun: 'twitchInputRemove', requiredUserPermissions: ['ManageGuild'] },
 		{ name: 'move', messageRun: 'twitchMsgMove', chatInputRun: 'twitchInputMove', requiredUserPermissions: ['ManageGuild'] },
 		{ name: 'message', messageRun: 'twitchMsgMessage', chatInputRun: 'twitchInputMessage', requiredUserPermissions: ['ManageGuild'] },
-		{ name: 'embed', messageRun: 'twitchMsgEmbed', chatInputRun: 'twitchInputEmbed', requiredUserPermissions: ['ManageGuild'] }
+		{ name: 'embed', messageRun: 'twitchMsgEmbed', chatInputRun: 'twitchInputEmbed', requiredUserPermissions: ['ManageGuild'] },
+		{ name: 'next', messageRun: 'twitchMsgNext' }
 	]
 })
 export class Twitch extends Subcommand {
@@ -257,6 +258,20 @@ export class Twitch extends Subcommand {
 		const embed = new EmbedBuilder().setTitle(`Embed preference updated for ${name}`).setDescription(`Embed preference set to \`${state}\`.`)
 
 		return sendFn({ embeds: [embed] })
+	}
+
+	twitchMsgNext(message: Message) {
+		if (!message.channel.isSendable()) return
+		if (message.author.id !== this.client.owner) return
+
+		const next = this.client.twitch.nextPoll
+		return (message.channel as TextChannel).send({
+			embeds: [
+				new EmbedBuilder()
+					.setTitle('Twitch — Next stream check')
+					.setDescription(`<t:${Math.floor(next / 1000)}:R> (<t:${Math.floor(next / 1000)}:T>)`)
+			]
+		})
 	}
 
 	// biome-ignore format

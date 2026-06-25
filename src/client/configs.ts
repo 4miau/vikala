@@ -7,6 +7,7 @@ import SettingsProvider from '../structures/SettingsProvider'
 import Settings from '../database/Settings'
 import { TaskStore } from '../stores/TaskStore'
 import TwitchManager from '../structures/TwitchManager'
+import YouTubeManager from '../structures/YouTubeManager'
 import Sheets from '../structures/SheetsManager'
 import Router from '../router/Router'
 import ModLogger from '../structures/ModLogger'
@@ -64,6 +65,9 @@ export default class Components {
 
 		this.client.twitch = new TwitchManager(this.client)
 		await this.client.twitch._init()
+
+		this.client.youtube = new YouTubeManager(this.client)
+		await this.client.youtube._init()
 
 		this.client.router = new Router(this.client)
 
