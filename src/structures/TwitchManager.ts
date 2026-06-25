@@ -111,8 +111,7 @@ export default class TwitchManager {
 		const streamer = await this.getTwitchUser(name)
 		if (!streamer) return null
 
-		const guilds = this.client.guilds.cache.values()
-		for (const guild of guilds) {
+		for (const guild of this.client.guilds.cache.values()) {
 			const streamers = this.listStreamers(guild)
 			const foundStreamer = streamers.find((s) => s.id === streamer.id)
 			if (foundStreamer) return foundStreamer
