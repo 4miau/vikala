@@ -12,8 +12,9 @@ import { Subcommand } from '@sapphire/plugin-subcommands'
 		'Add, remove, and manage YouTube channels to get notified when they post a new video or short. When using add, the channel handle is required. ' +
 		'Channel and message are optional. If no channel is provided, the current channel will be used. When using message, you can use the keywords `default` ' +
 		'to reset to the default message, and `none` to remove the message entirely (must have embed enabled). ' +
+		'By default, livestreams are excluded from notifications. Use the `streams` subcommand to include them. ' +
 		'Available message keywords: `{name}`, `{title}`, `{link}`.',
-	usage: 'youtube <list> | <add|remove|move|message|embed> [options]',
+	usage: 'youtube <list> | <add|remove|move|message|embed|streams> [options]',
 	examples: [
 		{ example: 'youtube list', description: 'Lists all tracked YouTube channels.' },
 		{ example: 'youtube add @mkbhd', description: 'Adds MKBHD as a tracked channel with default settings.' },
@@ -25,7 +26,8 @@ import { Subcommand } from '@sapphire/plugin-subcommands'
 		{ example: 'youtube move @mkbhd #uploads', description: 'Moves MKBHD notifications to the #uploads channel.' },
 		{ example: 'youtube message @mkbhd default', description: "Resets MKBHD's notification message to the default." },
 		{ example: 'youtube message @mkbhd {name} just dropped {title}!', description: 'Sets a custom notification message.' },
-		{ example: 'youtube embed @mkbhd false', description: 'Disables embed notifications for MKBHD.' }
+		{ example: 'youtube embed @mkbhd false', description: 'Disables embed notifications for MKBHD.' },
+		{ example: 'youtube streams @mkbhd true', description: 'Enables livestream notifications for MKBHD.' }
 	],
 	runIn: ['GUILD_ANY'],
 	subcommands: [
@@ -35,6 +37,7 @@ import { Subcommand } from '@sapphire/plugin-subcommands'
 		{ name: 'move', messageRun: 'youtubeMsgMove', chatInputRun: 'youtubeInputMove', requiredUserPermissions: ['ManageGuild'] },
 		{ name: 'message', messageRun: 'youtubeMsgMessage', chatInputRun: 'youtubeInputMessage', requiredUserPermissions: ['ManageGuild'] },
 		{ name: 'embed', messageRun: 'youtubeMsgEmbed', chatInputRun: 'youtubeInputEmbed', requiredUserPermissions: ['ManageGuild'] },
+		{ name: 'streams', messageRun: 'youtubeMsgStreams', chatInputRun: 'youtubeInputStreams', requiredUserPermissions: ['ManageGuild'] },
 		{ name: 'next', messageRun: 'youtubeMsgNext' }
 	]
 })
@@ -222,6 +225,38 @@ export class YouTube extends Subcommand {
 		return sendFn({ embeds: [embed] })
 	}
 
+	async youtubeMsgStreams(message: Message, args: Args) {
+		if (!message.channel.isSendable()) return
+
+		const handle = await args.pickResult('string').then((res) => (res.isOk() ? res.unwrap() : null))
+		const state = await args.pickResult('boolean').then((res) => (res.isOk() ? res.unwrap() : null))
+
+		return this.handleStreams(handle, message.guild, state, (content) => (message.channel as TextChannel).send(content))
+	}
+
+	youtubeInputStreams(interaction: Subcommand.ChatInputCommandInteraction) {
+		const handle = interaction.options.getString('handle', true)
+		const state = interaction.options.getBoolean('include', true)
+
+		return this.handleStreams(handle, interaction.guild, state, (content) => interaction.reply(content))
+	}
+
+	private async handleStreams(handle: string, guild: any, state: boolean, sendFn: (content: any) => Promise<any>) {
+		if (!handle) return sendFn({ content: 'You must provide a YouTube channel handle to set the stream preference for.', flags: ['Ephemeral'] })
+		if (state === null || state === undefined) return sendFn({ content: 'You must provide a valid state (true/false).', flags: ['Ephemeral'] })
+
+		const success = this.client.youtube.modifyChannel(handle, guild, { includeStreams: state })
+		if (!success) return sendFn({ content: 'Failed to set stream preference.', flags: ['Ephemeral'] })
+
+		const normalized = handle.replace(/^@/, '')
+		const embed = new EmbedBuilder()
+			.setTitle(`Stream notifications ${state ? 'enabled' : 'disabled'} for @${normalized}`)
+			.setDescription(state ? 'Livestreams will now trigger notifications.' : 'Only regular videos and shorts will trigger notifications.')
+			.setColor(Colors.Red)
+
+		return sendFn({ embeds: [embed] })
+	}
+
 	youtubeMsgNext(message: Message) {
 		if (!message.channel.isSendable()) return
 		if (message.author.id !== this.client.owner) return
@@ -317,6 +352,23 @@ export class YouTube extends Subcommand {
 								.setDescription('The message to send. Keywords: {name}, {title}, {link}. Use `default` or `none`.')
 								.setRequired(true)
 								.setAutocomplete(true)
+						)
+				)
+				.addSubcommand((sub) =>
+					sub
+						.setName('streams')
+						.setDescription('Toggle livestream notifications for a channel')
+						.addStringOption((option) =>
+							option
+								.setName('handle')
+								.setDescription('The YouTube channel handle')
+								.setRequired(true)
+						)
+						.addBooleanOption((option) =>
+							option
+								.setName('include')
+								.setDescription('Whether to include livestreams in notifications (default: false)')
+								.setRequired(true)
 						)
 				)
 				.addSubcommand((sub) =>
