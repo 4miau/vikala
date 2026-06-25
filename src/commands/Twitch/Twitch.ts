@@ -150,31 +150,22 @@ export class Twitch extends Subcommand {
 	}
 
 	private async handleStatus(options: any, sendFn: (content: any) => Promise<any>) {
-		const isInteraction = typeof options?.getString === 'function'
-		const name = isInteraction
-			? options.getString('name', true)
-			: await options.pickResult('string').then((res: any) => (res.isOk() ? res.unwrap() : null))
-
-		if (!name) {
-			return sendFn(isInteraction ? { content: 'You must provide a streamer name.', flags: ['Ephemeral'] } : { content: 'You must provide a streamer name.' })
+		const name = options.getString('name', true)
+		const status = await this.client.twitch.getStreamerStatus(name)
+		if (!status) {
+			return sendFn({ content: 'Failed to fetch streamer status.', flags: ['Ephemeral'] })
 		}
 
-		try {
-			const status = await this.client.twitch.getStreamerStatus(name)
+		const embed = new EmbedBuilder()
+			.setAuthor({ name: name, url: `https://twitch.tv/${name}` })
+			.setTitle('Streamer Status')
+			.addFields(
+				{ name: 'Live', value: status.is_live ? 'Yes' : 'No', inline: true },
+				{ name: 'Message Posted?', value: status.msg ? 'Last stream has been posted' : 'Last stream has not yet been posted', inline: true },
+				{ name: 'Stream Info', value: status.stream ? `[${status.stream.title}](https://twitch.tv/${name})` : 'No stream info available', inline: false }
+			)
 
-			const embed = new EmbedBuilder()
-				.setAuthor({ name: name, url: `https://twitch.tv/${name}` })
-				.setTitle('Streamer Status')
-				.addFields(
-					{ name: 'Live', value: status.is_live ? 'Yes' : 'No', inline: true },
-					{ name: 'Message Posted?', value: status.msg ? 'Last stream has been posted' : 'Last stream has not yet been posted', inline: true },
-					{ name: 'Stream Info', value: status.stream ? `[${status.stream.title}](https://twitch.tv/${name})` : 'No stream info available', inline: false }
-				)
-
-			return sendFn({ embeds: [embed] })
-		} catch {
-			return sendFn(isInteraction ? { content: 'Failed to fetch streamer status.', flags: ['Ephemeral'] } : { content: 'Failed to fetch streamer status.' })
-		}
+		return sendFn({ embeds: [embed] })
 	}
 
 	private async handleAdd(name: string, guild: any, channelId: string, message: string | null, sendFn: (content: any) => Promise<any>) {
