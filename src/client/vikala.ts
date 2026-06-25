@@ -34,6 +34,7 @@ import RoleGroupManager from '../structures/RoleGroupManager'
 import ReloadManager from '../structures/ReloadManager'
 import ThreadManager from '../structures/ThreadManager'
 import ChannelSnapshotManager from '../structures/ChannelSnapshotManager'
+import VerificationManager from '../structures/VerificationManager'
 import ReminderManager from '../structures/ReminderManager'
 
 declare module '@sapphire/framework' {
@@ -60,6 +61,7 @@ declare module '@sapphire/framework' {
 		twitch: TwitchManager
 		threads: ThreadManager
 		channelSnapshots: ChannelSnapshotManager
+		verification: VerificationManager
 		reminders: ReminderManager
 		api: APIManager
 		queue: Queue
@@ -96,6 +98,7 @@ export default class Vikala extends SapphireClient {
 	twitch: TwitchManager
 	threads: ThreadManager
 	channelSnapshots: ChannelSnapshotManager
+	verification: VerificationManager
 	reminders: ReminderManager
 	api: APIManager
 	queue: Queue
