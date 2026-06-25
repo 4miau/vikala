@@ -8,10 +8,11 @@ import { Colors } from '../../lib/util/Colors'
 	aliases: ['verifysetup'],
 	description: 'Sets up the verification system for this server',
 	detailedDescription:
-		'Posts a verification message with a Verify button in the specified channel. Members who click it will receive the configured role(s). Minimum account age can optionally be enforced via the slash command.',
+		'Posts a verification message with a Verify button in the specified channel. Members who click it will receive the configured role(s). Optionally customize the message title, description, and button label for different languages or server styles.',
 	examples: [
 		{ example: 'setupverification #verify @Member', description: 'Set up verification in #verify, granting the Member role.' },
-		{ example: 'setupverification #verify @Member @Verified', description: 'Grant multiple roles on verification.' }
+		{ example: 'setupverification #verify @Member @Verified', description: 'Grant multiple roles on verification.' },
+		{ example: '/setupverification custom_title:"Vérification" custom_description:"Cliquez pour vérifier"', description: 'Set up with custom French text.' }
 	],
 	requiredUserPermissions: [PermissionFlagsBits.ManageGuild],
 	runIn: ['GUILD_ANY']
@@ -37,7 +38,7 @@ export class SetupVerificationCommand extends Command {
 
 		if (!result.success) return loading.edit(`❌ ${result.error}`)
 
-		const embed = this._buildSuccessEmbed(channel.id, roles, null)
+		const embed = this._buildSuccessEmbed(channel.id, roles, null, undefined, undefined, undefined)
 		return loading.edit({ content: '', embeds: [embed] })
 	}
 
@@ -48,17 +49,35 @@ export class SetupVerificationCommand extends Command {
 		const role1 = interaction.options.getRole('role', true)
 		const role2 = interaction.options.getRole('role2', false)
 		const minimumAge = interaction.options.getInteger('minimum_age', false)
+		const customTitle = interaction.options.getString('custom_title', false)
+		const customDescription = interaction.options.getString('custom_description', false)
+		const customButtonLabel = interaction.options.getString('custom_button_label', false)
 
 		const roles = [role1.id, role2?.id].filter(Boolean) as string[]
-		const result = await this.client.verification.setup(interaction.guild!, channel.id, roles, minimumAge)
+		const result = await this.client.verification.setup(
+			interaction.guild!,
+			channel.id,
+			roles,
+			minimumAge,
+			customTitle ?? undefined,
+			customDescription ?? undefined,
+			customButtonLabel ?? undefined
+		)
 
 		if (!result.success) return interaction.editReply({ content: `❌ ${result.error}` })
 
-		const embed = this._buildSuccessEmbed(channel.id, roles, minimumAge)
+		const embed = this._buildSuccessEmbed(channel.id, roles, minimumAge, customTitle ?? undefined, customDescription ?? undefined, customButtonLabel ?? undefined)
 		return interaction.editReply({ embeds: [embed] })
 	}
 
-	private _buildSuccessEmbed(channelId: string, roleIds: string[], minimumAge: number | null): EmbedBuilder {
+	private _buildSuccessEmbed(
+		channelId: string,
+		roleIds: string[],
+		minimumAge: number | null,
+		customTitle?: string,
+		customDescription?: string,
+		customButtonLabel?: string
+	): EmbedBuilder {
 		const embed = new EmbedBuilder()
 			.setColor(Colors.Active)
 			.setTitle('✅ Verification System Configured')
@@ -69,6 +88,9 @@ export class SetupVerificationCommand extends Command {
 			.setTimestamp()
 
 		if (minimumAge) embed.addFields({ name: 'Minimum Account Age', value: `${minimumAge} day(s)`, inline: true })
+		if (customTitle) embed.addFields({ name: 'Custom Title', value: customTitle, inline: false })
+		if (customDescription) embed.addFields({ name: 'Custom Description', value: customDescription.length > 100 ? customDescription.substring(0, 97) + '...' : customDescription, inline: false })
+		if (customButtonLabel) embed.addFields({ name: 'Custom Button Label', value: customButtonLabel, inline: true })
 
 		return embed
 	}
@@ -104,6 +126,27 @@ export class SetupVerificationCommand extends Command {
                         .setDescription('Minimum account age in days required to verify')
                         .setRequired(false)
                         .setMinValue(1)
+				)
+				.addStringOption(opt =>
+					opt
+                        .setName('custom_title')
+                        .setDescription('Custom title for the verification message (default: "Server Verification")')
+                        .setRequired(false)
+                        .setMaxLength(256)
+				)
+				.addStringOption(opt =>
+					opt
+                        .setName('custom_description')
+                        .setDescription('Custom description for the verification message')
+                        .setRequired(false)
+                        .setMaxLength(2048)
+				)
+				.addStringOption(opt =>
+					opt
+                        .setName('custom_button_label')
+                        .setDescription('Custom label for the verify button (default: "Verify")')
+                        .setRequired(false)
+                        .setMaxLength(80)
 				)
 		)
 	}

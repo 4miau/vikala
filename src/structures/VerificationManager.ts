@@ -10,6 +10,9 @@ export interface VerificationConfig {
 	messageId: string | null
 	roleIds: string[]
 	minimumAge: number | null
+	customTitle?: string
+	customDescription?: string
+	customButtonLabel?: string
 }
 
 const DEFAULT_CONFIG: VerificationConfig = {
@@ -17,7 +20,10 @@ const DEFAULT_CONFIG: VerificationConfig = {
 	channelId: null,
 	messageId: null,
 	roleIds: [],
-	minimumAge: null
+	minimumAge: null,
+	customTitle: undefined,
+	customDescription: undefined,
+	customButtonLabel: undefined
 }
 
 export default class VerificationManager {
@@ -31,18 +37,23 @@ export default class VerificationManager {
 		return this.client.settings.get(guildId, 'verification', DEFAULT_CONFIG)
 	}
 
-	public buildEmbed(): EmbedBuilder {
+	public buildEmbed(config?: VerificationConfig): EmbedBuilder {
+		const title = config?.customTitle || 'Server Verification'
+		const description = config?.customDescription || 'Click the **Verify** button below to gain access to this server.'
+
 		return new EmbedBuilder()
 			.setColor(Colors.Active)
-			.setTitle('Server Verification')
-			.setDescription('Click the **Verify** button below to gain access to this server.')
+			.setTitle(title)
+			.setDescription(description)
 			.setTimestamp()
 	}
 
-	public buildRow(): ActionRowBuilder<ButtonBuilder> {
+	public buildRow(config?: VerificationConfig): ActionRowBuilder<ButtonBuilder> {
+		const label = config?.customButtonLabel || 'Verify'
+
 		const button = new ButtonBuilder()
 			.setCustomId('verify_button')
-			.setLabel('Verify')
+			.setLabel(label)
 			.setStyle(ButtonStyle.Success)
 			.setEmoji('✅')
 
@@ -53,13 +64,27 @@ export default class VerificationManager {
     guild: Guild,
     channelId: string,
     roleIds: string[],
-    minimumAge: number | null = null
+    minimumAge: number | null = null,
+    customTitle?: string,
+    customDescription?: string,
+    customButtonLabel?: string
 	): Promise<{ success: boolean; error?: string }> {
 		const channel = guild.channels.cache.get(channelId) as TextChannel
 		if (!channel) return { success: false, error: 'Channel not found.' }
 
-		const embed = this.buildEmbed()
-		const row = this.buildRow()
+		const config: VerificationConfig = {
+			enabled: true,
+			channelId: channel.id,
+			messageId: null,
+			roleIds,
+			minimumAge,
+			customTitle: customTitle || undefined,
+			customDescription: customDescription || undefined,
+			customButtonLabel: customButtonLabel || undefined
+		}
+
+		const embed = this.buildEmbed(config)
+		const row = this.buildRow(config)
 
 		let sentMessage: any
 		try {
@@ -80,13 +105,7 @@ export default class VerificationManager {
 			} catch {}
 		}
 
-		const config: VerificationConfig = {
-			enabled: true,
-			channelId: channel.id,
-			messageId: sentMessage.id,
-			roleIds,
-			minimumAge
-		}
+		config.messageId = sentMessage.id
 
 		await this.client.settings.set(guild.id, 'verification', config)
 		return { success: true }
