@@ -373,17 +373,4 @@ export default class TwitchManager {
 	listStreamers(guild: string | Guild): Streamer[] {
 		return this.client.settings.get(guild, 'streamers', [])
 	}
-
-	checkForPremium(guild: Guild): boolean {
-		return this.client.settings.get(guild, 'premium', false)
-	}
-
-	async isLive(name: string): Promise<boolean> {
-		const stream = await this.getStream(name)
-		return !!stream
-	}
-
-	listStreamers(guild: string | Guild): Streamer[] {
-		return this.client.settings.get(guild, 'streamers', [])
-	}
 }
