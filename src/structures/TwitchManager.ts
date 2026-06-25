@@ -11,6 +11,7 @@ import { parseOfflineEmbed, parseOnlineEmbed, parseStreamMessage, createStreamBu
 export default class TwitchManager {
 	private accessToken: string
 	private tokenTimeout: NodeJS.Timeout | null = null
+	public nextPoll: number = 0
 	private readonly client: Vikala
 
 	public constructor(client: Vikala) {
@@ -23,6 +24,7 @@ export default class TwitchManager {
 
 			setInterval(() => this.postStreams().catch(() => {}), ms('5m'))
 			setInterval(() => this.checkStreamersOffline().catch(() => {}), ms('10m'))
+			this.nextPoll = Date.now() + ms('5m')
 			setInterval(() => this.manageTokens().catch(() => {}), ms('1h'))
 			setInterval(() => this.updateAllStreamers().catch(() => {}), ms('1d'))
 		} catch (err) {
@@ -223,6 +225,7 @@ export default class TwitchManager {
 	}
 
 	async postStreams(): Promise<void> {
+		this.nextPoll = Date.now() + ms('5m')
 		const guilds = this.client.guilds.cache.values()
 
 		for (const guild of guilds) {
@@ -353,7 +356,22 @@ export default class TwitchManager {
 			.map((s) => `:red_circle: [${s.name}](https://twitch.tv/${s.name}) (${s.id}) ${s.channel ? `<#${s.channel}>` : 'No channel set'}`)
 			.join('\n')
 
-		return new EmbedBuilder().setTitle('Tracked Twitch Streamers').setDescription(description)
+		return new EmbedBuilder()
+			.setTitle('Tracked Twitch Streamers')
+			.setDescription(description)
+	}
+
+	checkForPremium(guild: Guild): boolean {
+		return this.client.settings.get(guild, 'premium', false)
+	}
+
+	async isLive(name: string): Promise<boolean> {
+		const stream = await this.getStream(name)
+		return !!stream
+	}
+
+	listStreamers(guild: string | Guild): Streamer[] {
+		return this.client.settings.get(guild, 'streamers', [])
 	}
 
 	checkForPremium(guild: Guild): boolean {

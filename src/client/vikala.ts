@@ -20,6 +20,7 @@ import SettingsProvider from '../structures/SettingsProvider'
 import Components from './configs'
 import { envs } from '../lib/util/environmentVariables'
 import TwitchManager from '../structures/TwitchManager'
+import YouTubeManager from '../structures/YouTubeManager'
 import Sheets from '../structures/SheetsManager'
 import Router from '../router/Router'
 import { TaskStore } from '../stores/TaskStore'
@@ -59,6 +60,7 @@ declare module '@sapphire/framework' {
 		router: Router
 		sheets: Sheets
 		twitch: TwitchManager
+		youtube: YouTubeManager
 		threads: ThreadManager
 		channelSnapshots: ChannelSnapshotManager
 		verification: VerificationManager
@@ -96,6 +98,7 @@ export default class Vikala extends SapphireClient {
 	automod: AutomodManager
 	roleGroups: RoleGroupManager
 	twitch: TwitchManager
+	youtube: YouTubeManager
 	threads: ThreadManager
 	channelSnapshots: ChannelSnapshotManager
 	verification: VerificationManager

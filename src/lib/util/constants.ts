@@ -78,6 +78,11 @@ export const twitchApi2: string = 'https://api.twitch.tv/helix'
 
 export const defaultStreamMessage: string = '{name} has gone live! {link}'
 
+// YOUTUBE
+export const youtubeApi: string = 'https://www.googleapis.com/youtube/v3'
+
+export const defaultVideoMessage: string = '{name} has posted a new video! {link}'
+
 // EVAL
 export const OBJECT_INSPECTION_DEPTH_MIN = 0
 export const OBJECT_INSPECTION_DEPTH_MAX = 10
