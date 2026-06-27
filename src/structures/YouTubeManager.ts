@@ -176,12 +176,17 @@ export default class YouTubeManager {
 				let newVideos = lastIndex === -1 ? videos : videos.slice(0, lastIndex)
 				if (arrayEmpty(newVideos)) continue
 
-				// Filter out streams if includeStreams is false
+				const newestVideoId = newVideos[0].resourceId.videoId
+
 				if (!ytChannel.includeStreams) {
 					const videoIds = newVideos.map((v) => v.resourceId.videoId)
 					const videoTypes = await this.checkVideoTypes(videoIds)
 					newVideos = newVideos.filter((v) => videoTypes.get(v.resourceId.videoId) === 'none')
-					if (arrayEmpty(newVideos)) continue
+
+					if (arrayEmpty(newVideos)) {
+						this.modifyChannel(ytChannel.handle, guild, { lastVideoId: newestVideoId })
+						continue
+					}
 				}
 					const discordChannel = guild.channels.cache.get(ytChannel.channel)
 					if (!discordChannel?.isSendable()) continue
