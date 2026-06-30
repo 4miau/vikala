@@ -166,53 +166,47 @@ export default class YouTubeManager {
 					const videos = await this.getRecentVideos(ytChannel.uploadsPlaylistId)
 					if (arrayEmpty(videos)) continue
 
-					// First run: store the newest video ID without posting
 					if (!ytChannel.lastVideoId) {
 						this.modifyChannel(ytChannel.handle, guild, { lastVideoId: videos[0].resourceId.videoId })
 						continue
 					}
 
 					const lastIndex = videos.findIndex((v) => v.resourceId.videoId === ytChannel.lastVideoId)
-				let newVideos = lastIndex === -1 ? videos : videos.slice(0, lastIndex)
-				if (arrayEmpty(newVideos)) continue
+					let newVideos = lastIndex === -1 ? [videos[0]] : videos.slice(0, lastIndex)
+					if (arrayEmpty(newVideos)) continue
 
-				const newestVideoId = newVideos[0].resourceId.videoId
+					if (!ytChannel.includeStreams) {
+						const videoIds = newVideos.map((v) => v.resourceId.videoId)
+						const videoTypes = await this.checkVideoTypes(videoIds)
+						newVideos = newVideos.filter((v) => videoTypes.get(v.resourceId.videoId) === 'none')
 
-				if (!ytChannel.includeStreams) {
-					const videoIds = newVideos.map((v) => v.resourceId.videoId)
-					const videoTypes = await this.checkVideoTypes(videoIds)
-					newVideos = newVideos.filter((v) => videoTypes.get(v.resourceId.videoId) === 'none')
+						if (arrayEmpty(newVideos)) continue
+						}
+							const discordChannel = guild.channels.cache.get(ytChannel.channel)
+							if (!discordChannel?.isSendable()) continue
 
-					if (arrayEmpty(newVideos)) {
-						this.modifyChannel(ytChannel.handle, guild, { lastVideoId: newestVideoId })
-						continue
+							// Post oldest-first so notifications appear in chronological order
+							for (const video of newVideos.reverse()) {
+								const videoId = video.resourceId.videoId
+								const messageContent = ytChannel.message ? parseVideoMessage(ytChannel.message, ytChannel.name, video) : null
+								const embed = ytChannel.embed ? parseVideoEmbed(ytChannel, video) : null
+								const components = embed ? [createVideoButton(videoId)] : []
+
+								await discordChannel.send({
+									content: messageContent || null,
+									embeds: embed ? [embed] : [],
+									components
+								})
+							}
+
+							this.modifyChannel(ytChannel.handle, guild, {
+								lastVideoId: newVideos[newVideos.length - 1].resourceId.videoId,
+								lastPosted: Date.now()
+							})
+						} catch {
+							// Failed to post video notification
+						}
 					}
-				}
-					const discordChannel = guild.channels.cache.get(ytChannel.channel)
-					if (!discordChannel?.isSendable()) continue
-
-					// Post oldest-first so notifications appear in chronological order
-					for (const video of newVideos.reverse()) {
-						const videoId = video.resourceId.videoId
-						const messageContent = ytChannel.message ? parseVideoMessage(ytChannel.message, ytChannel.name, video) : null
-						const embed = ytChannel.embed ? parseVideoEmbed(ytChannel, video) : null
-						const components = embed ? [createVideoButton(videoId)] : []
-
-						await discordChannel.send({
-							content: messageContent || null,
-							embeds: embed ? [embed] : [],
-							components
-						})
-					}
-
-					this.modifyChannel(ytChannel.handle, guild, {
-						lastVideoId: newVideos[newVideos.length - 1].resourceId.videoId,
-						lastPosted: Date.now()
-					})
-				} catch {
-					// Failed to post video notification
-				}
-			}
 		}
 	}
 
