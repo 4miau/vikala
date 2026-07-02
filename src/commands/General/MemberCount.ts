@@ -11,7 +11,7 @@ import { EmbedBuilder, Guild, type Message } from 'discord.js'
 	examples: [{ example: 'membercount', description: 'Will return the total number of members, online, humans & bots in the server.' }]
 })
 export class MemberCount extends Command {
-	client = this.container.client
+	private client = this.container.client
 
 	public async messageRun(message: Message, args: Args) {
 		if (!message.channel.isSendable()) return

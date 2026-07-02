@@ -4,7 +4,7 @@ import { ApplyOptions } from '@sapphire/decorators'
 
 ApplyOptions<Precondition.Options>({ name: 'ChannelBlacklist' })
 export class ChannelBlacklist extends Precondition {
-	client = this.container.client
+	private client = this.container.client
 
 	public override messageRun(message: Message<boolean>, command: MessageCommand, context: PreconditionContext): PreconditionResult {
 		return this.isChannelBlacklisted(message.guild, message, message.channelId)

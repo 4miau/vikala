@@ -39,7 +39,7 @@ import { Subcommand } from '@sapphire/plugin-subcommands'
 	]
 })
 export class Twitch extends Subcommand {
-	client = this.container.client
+	private client = this.container.client
 
 	twitchMsgList(message: Message) {
 		if (!message.channel.isSendable()) return

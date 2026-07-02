@@ -28,7 +28,7 @@ declare type LogType = 'channel' | 'message' | 'guild' | 'moderation' | 'role' |
 	flags: ['channel', 'message', 'guild', 'moderation', 'role', 'user', 'all']
 })
 export class SetLogs extends Subcommand {
-	client = this.container.client
+	private client = this.container.client
 
 	public async msgList(message: Message) {
 		if (!message.channel.isSendable()) return

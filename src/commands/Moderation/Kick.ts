@@ -1,8 +1,9 @@
-import { Command, Args } from '@sapphire/framework'
+import { ApplyOptions } from '@sapphire/decorators'
+import { Args, Command } from '@sapphire/framework'
 import type { GuildMember, Message } from 'discord.js'
+
 import Case from '../../database/Case'
 import ModLogger from '../../structures/ModLogger'
-import { ApplyOptions } from '@sapphire/decorators'
 
 @ApplyOptions<Command.Options>({
 	name: 'kick',
@@ -19,46 +20,58 @@ import { ApplyOptions } from '@sapphire/decorators'
 	runIn: ['GUILD_TEXT']
 })
 export class Kick extends Command {
-	client = this.container.client
+	private client = this.container.client
 
 	public async messageRun(message: Message, args: Args) {
-		const member = await args.pick('member')
-		const reason = (await args.rest('string')) || 'No reason specified'
-
 		if (!message.channel.isSendable()) return
-		if (!member.kickable) return message.channel.send('I am unable to kick this user.')
 
-		await member.kick(reason)
+		try {
+			const member = await args.pick('member')
+			const reason = (await args.rest('string')) || 'No reason specified'
 
-		await this.client.cases.createCase(message.guild, {
-			message: message.id,
-			action: this.client.cases.MOD_ACTIONS[4],
-			reason: reason,
-			target: member,
-			mod: message.member
-		})
-
-		return message.channel.send(`Successfully kicked **${member.user.id}**`)
+			return this.handleKick(member, reason, message.guild, message.member as GuildMember, (content) =>
+				message.channel.send(content)
+			)
+		} catch {
+			return message.channel.send('Failed to kick member. Please check your arguments and try again.')
+		}
 	}
 
 	public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
-		const member = interaction.options.getMember('member') as GuildMember
-		const reason = interaction.options.getString('reason')
+		try {
+			const member = interaction.options.getMember('member') as GuildMember
+			const reason = interaction.options.getString('reason') || 'No reason specified'
 
-		if (!member) return interaction.editReply('Member not found.')
-		if (!member.kickable) return interaction.editReply('I am unable to kick this user.')
+			if (!member) return interaction.editReply('Member not found.')
+
+			return this.handleKick(member, reason, interaction.guild, interaction.member as GuildMember, (content) =>
+				interaction.editReply(content)
+			)
+		} catch {
+			return interaction.editReply('Failed to kick member. Please try again.')
+		}
+	}
+
+	private async handleKick(
+		member: GuildMember,
+		reason: string,
+		guild: any,
+		mod: GuildMember,
+		sendFn: (content: any) => Promise<any>
+	) {
+		if (!member.kickable) return sendFn('I am unable to kick this user.')
 
 		await member.kick(reason)
 
-		await this.client.cases.createCase(interaction.guild, {
-			message: interaction.id,
+		await this.client.cases.createCase(guild, {
+			message: member.id,
 			action: this.client.cases.MOD_ACTIONS[4],
 			reason: reason,
 			target: member,
-			mod: interaction.member as GuildMember
+			mod: mod
 		})
 
-		return interaction.editReply(`Successfully kicked **${member.user.id}**`)
+		return sendFn(`Successfully kicked **${member.user.id}**`)
 	}
 
 	// biome-ignore format

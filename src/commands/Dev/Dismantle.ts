@@ -13,7 +13,7 @@ declare type ModuleType = 'command' | 'listener' | 'precondition' | 'task' | 'ar
 	preconditions: ['OwnerOnly']
 })
 export class Dismantle extends Command {
-	client = this.container.client
+	private client = this.container.client
 
 	public async messageRun(message: Message, args: Args) {
 		if (!message.channel.isSendable()) return

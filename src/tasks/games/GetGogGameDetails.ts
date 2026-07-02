@@ -6,7 +6,7 @@ import { gogProductsApi } from '../../lib/util/constants'
 
 @ApplyOptions<Piece.Options>({ name: 'getgoggamedetails' })
 export default class GetGogGameDetails extends Task {
-	client = this.container.client
+	private client = this.container.client
 
 	async exec(gameId: string) {
 		const obj = {

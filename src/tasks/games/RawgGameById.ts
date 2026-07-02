@@ -7,7 +7,7 @@ import { envs } from '../../lib/util/environmentVariables'
 
 @ApplyOptions<Piece.Options>({ name: 'rawggamebyid' })
 export default class RawgGameById extends Task {
-	client = this.container.client
+	private client = this.container.client
 
 	async exec(gameId: string) {
 		const obj = {

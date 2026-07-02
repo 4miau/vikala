@@ -7,7 +7,7 @@ import { envs } from '../../lib/util/environmentVariables'
 
 @ApplyOptions<Piece.Options>({ name: 'ggdeals' })
 export default class GGDeals extends Task {
-	client = this.container.client
+	private client = this.container.client
 
 	async exec(gameId: string, region?: string) {
 		const validRegion = ['au', 'be', 'br', 'ca', 'ch', 'de', 'dk', 'es', 'eu', 'fi', 'fr', 'gb', 'ie', 'it', 'nl', 'no', 'pl', 'se', 'us'].includes(

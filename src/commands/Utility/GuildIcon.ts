@@ -10,7 +10,7 @@ import { EmbedBuilder, type Message } from 'discord.js'
 	runIn: ['GUILD_ANY']
 })
 export class GuildIcon extends Command {
-	client = this.container.client
+	private client = this.container.client
 
 	public async messageRun(message: Message, args: Args) {
 		if (!message.channel.isSendable()) return

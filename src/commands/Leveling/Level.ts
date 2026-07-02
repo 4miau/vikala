@@ -36,7 +36,7 @@ import { arrayEmpty } from 'miau-utilities'
 	]
 })
 export class LevelCommand extends Subcommand {
-	client = this.container.client
+	private client = this.container.client
 
 	public async messageCheck(message: Message, args: Args) {
 		if (!message.guild || !message.channel.isSendable()) return

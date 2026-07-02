@@ -32,7 +32,7 @@ import { ThreadConfig } from '../../typings/@definitions/Threads'
 	runIn: ['GUILD_ANY']
 })
 export class ThreadCommand extends Subcommand {
-	client = this.container.client
+	private client = this.container.client
 
 	public async setupMsg(message: Message) {
 		if (!message.channel.isSendable()) return

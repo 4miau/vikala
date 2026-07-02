@@ -6,7 +6,7 @@ import { Events, GuildChannel } from 'discord.js'
 	event: Events.ChannelCreate
 })
 export class EventListener extends Listener {
-	client = this.container.client
+	private client = this.container.client
 
 	public override async run(channel: GuildChannel) {
 		await this.client.channelSnapshots.updateSnapshot(channel)

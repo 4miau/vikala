@@ -15,7 +15,7 @@ import type { GuildMember, Message } from 'discord.js'
 	requiredUserPermissions: ['ManageNicknames']
 })
 export class SetNickname extends Command {
-	client = this.container.client
+	private client = this.container.client
 
 	public async messageRun(message: Message, args: Args) {
 		if (!message.channel.isSendable()) return

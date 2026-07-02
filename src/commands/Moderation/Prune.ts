@@ -35,7 +35,7 @@ import * as emoji from 'node-emoji'
 	options: ['a', 'amount']
 })
 export class Prune extends Subcommand {
-	client = this.container.client
+	private client = this.container.client
 
 	public async pruneAllMsg(message: Message, args: Args) {
 		if (!message.channel.isSendable()) return

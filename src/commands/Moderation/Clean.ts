@@ -12,7 +12,7 @@ import ms from 'ms'
 	requiredUserPermissions: ['ManageMessages']
 })
 export class Clean extends Command {
-	client = this.container.client
+	private client = this.container.client
 
 	public async messageRun(message: Message) {
 		if (!message.channel.isSendable()) return

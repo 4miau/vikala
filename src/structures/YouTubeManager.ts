@@ -18,8 +18,11 @@ export default class YouTubeManager {
 
 	async _init(): Promise<void> {
 		try {
-			setInterval(() => this.postNewVideos().catch(() => {}), ms('5m'))
-			this.nextPoll = Date.now() + ms('5m')
+			setTimeout(() => {
+				this.postNewVideos().catch((err) => this.client.logger.error('[YouTube Manager] Error in first check:', err))
+				setInterval(() => this.postNewVideos().catch((err) => this.client.logger.error('[YouTube Manager] Error in interval check:', err)), ms('5m'))
+			}, ms('2.5m'))
+			this.nextPoll = Date.now() + ms('2.5m')
 		} catch (err) {
 			throw new Error(`Failed to initialize YouTube Manager: ${err}`)
 		}
@@ -178,35 +181,36 @@ export default class YouTubeManager {
 					if (!ytChannel.includeStreams) {
 						const videoIds = newVideos.map((v) => v.resourceId.videoId)
 						const videoTypes = await this.checkVideoTypes(videoIds)
+
 						newVideos = newVideos.filter((v) => videoTypes.get(v.resourceId.videoId) === 'none')
 
 						if (arrayEmpty(newVideos)) continue
-						}
-							const discordChannel = guild.channels.cache.get(ytChannel.channel)
-							if (!discordChannel?.isSendable()) continue
-
-							// Post oldest-first so notifications appear in chronological order
-							for (const video of newVideos.reverse()) {
-								const videoId = video.resourceId.videoId
-								const messageContent = ytChannel.message ? parseVideoMessage(ytChannel.message, ytChannel.name, video) : null
-								const embed = ytChannel.embed ? parseVideoEmbed(ytChannel, video) : null
-								const components = embed ? [createVideoButton(videoId)] : []
-
-								await discordChannel.send({
-									content: messageContent || null,
-									embeds: embed ? [embed] : [],
-									components
-								})
-							}
-
-							this.modifyChannel(ytChannel.handle, guild, {
-								lastVideoId: newVideos[newVideos.length - 1].resourceId.videoId,
-								lastPosted: Date.now()
-							})
-						} catch {
-							// Failed to post video notification
-						}
 					}
+
+					const discordChannel = guild.channels.cache.get(ytChannel.channel)
+					if (!discordChannel?.isSendable()) continue
+
+					for (const video of newVideos.reverse()) {
+						const videoId = video.resourceId.videoId
+						const messageContent = ytChannel.message ? parseVideoMessage(ytChannel.message, ytChannel.name, video) : null
+						const embed = ytChannel.embed ? parseVideoEmbed(ytChannel, video) : null
+						const components = embed ? [createVideoButton(videoId)] : []
+
+						await discordChannel.send({
+							content: messageContent || null,
+							embeds: embed ? [embed] : [],
+							components
+						})
+					}
+
+					this.modifyChannel(ytChannel.handle, guild, {
+						lastVideoId: newVideos[newVideos.length - 1].resourceId.videoId,
+						lastPosted: Date.now()
+					})
+				} catch (err) {
+					this.client.logger.error(`[YouTube Manager] Error posting for @${ytChannel.handle}:`, err)
+				}
+			}
 		}
 	}
 

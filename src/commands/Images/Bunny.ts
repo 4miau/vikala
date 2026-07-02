@@ -1,7 +1,8 @@
 import { ApplyOptions } from '@sapphire/decorators'
 import { Command } from '@sapphire/framework'
-import { EmbedBuilder, TextChannel, type Message } from 'discord.js'
+import { TextChannel, type Message } from 'discord.js'
 import { Colors } from '../../lib/util/Colors'
+import { createAnimalEmbed } from '../../lib/util/embedBuilders'
 
 @ApplyOptions<Command.Options>({
 	name: 'bunny',
@@ -12,7 +13,7 @@ import { Colors } from '../../lib/util/Colors'
 	examples: [{ example: 'bunny', description: 'Will return a random bunny GIF' }]
 })
 export class Bunny extends Command {
-	client = this.container.client
+	private client = this.container.client
 
 	public async messageRun(message: Message) {
 		if (!message.channel.isSendable()) return
@@ -32,7 +33,7 @@ export class Bunny extends Command {
 				return sendFn({ content: 'No bunny pictures found. Please try again later.' })
 			}
 
-			const embed = new EmbedBuilder().setTitle('🐰 Random Bunny').setImage(response.media.gif).setColor(Colors.BunnyPink)
+			const embed = createAnimalEmbed('🐰 Random Bunny', response.media.gif, Colors.BunnyPink)
 
 			return sendFn({ embeds: [embed] })
 		} catch {

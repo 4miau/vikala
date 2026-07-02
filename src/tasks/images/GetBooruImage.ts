@@ -11,7 +11,7 @@ declare type booruOptions = {
 
 @ApplyOptions<Piece.Options>({ name: 'getbooruimage' })
 export default class GetBooruImage extends Task {
-	client = this.container.client
+	private client = this.container.client
 
 	async exec(query: string, options?: booruOptions) {
 		const obj = {

@@ -6,6 +6,7 @@
 	"author": "4miau",
 	"license": "Apache-2.0",
 	"dependencies": {
+		"@dotenvx/dotenvx": "^1.75.1",
 		"@sapphire/decorators": "^6.2.0",
 		"@sapphire/framework": "^5.5.0",
 		"@sapphire/plugin-editable-commands": "^4.0.4",

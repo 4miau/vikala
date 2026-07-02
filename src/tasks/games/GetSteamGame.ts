@@ -6,7 +6,7 @@ import { steamApi } from '../../lib/util/constants'
 
 @ApplyOptions<Piece.Options>({ name: 'getsteamgame' })
 export default class GetSteamGame extends Task {
-	client = this.container.client
+	private client = this.container.client
 
 	async exec(gameId: string) {
 		const obj = {

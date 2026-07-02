@@ -1,5 +1,5 @@
-import { Args, Command } from '@sapphire/framework'
 import { ApplyOptions } from '@sapphire/decorators'
+import { Args, Command } from '@sapphire/framework'
 import { EmbedBuilder, type Message } from 'discord.js'
 
 @ApplyOptions<Command.Options>({
@@ -15,7 +15,7 @@ import { EmbedBuilder, type Message } from 'discord.js'
 	]
 })
 export class GameDeals extends Command {
-	client = this.container.client
+	private client = this.container.client
 
 	public async messageRun(message: Message, args: Args) {
 		if (!message.channel.isSendable()) return
@@ -59,6 +59,18 @@ export class GameDeals extends Command {
 			builder
 				.setName('gamedeals')
 				.setDescription('Get the latest game deals from keyshops (from gg.deals)')
+				.addStringOption((option) =>
+					option
+						.setName('gameid')
+						.setDescription('Steam game ID')
+						.setRequired(true)
+				)
+				.addStringOption((option) =>
+					option
+						.setName('region')
+						.setDescription('Region (e.g., us, eu)')
+						.setRequired(false)
+				)
 		)
 	}
 }

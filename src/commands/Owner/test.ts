@@ -10,7 +10,7 @@ import ms from 'ms'
     preconditions: ['OwnerOnly']
 })
 export class Test extends Command {
-    client = this.container.client
+    private client = this.container.client
 
     public async messageRun(message: Message, args: Args) {
         if (!message.channel.isSendable()) return

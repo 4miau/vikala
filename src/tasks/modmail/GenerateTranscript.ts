@@ -6,7 +6,7 @@ import { escapeHtml } from '../../lib/util/utilities'
 
 @ApplyOptions<Piece.Options>({ name: 'generatetranscript' })
 export class GenerateTranscript extends Task {
-	client = this.container.client
+	private client = this.container.client
 
 	public async exec(thread: IThread): Promise<string> {
 		const guild = this.client.guilds.cache.get(thread.guildId)

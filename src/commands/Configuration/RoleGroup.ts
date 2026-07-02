@@ -41,7 +41,7 @@ import { Colors } from '../../lib/util/Colors'
 	]
 })
 export class RoleGroupCommand extends Subcommand {
-	client = this.container.client
+	private client = this.container.client
 
 	public async messageCreate(message: Message, args: Args) {
 		if (!message.guild || !message.channel.isSendable()) return

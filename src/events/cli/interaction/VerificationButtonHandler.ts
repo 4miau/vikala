@@ -6,7 +6,7 @@ import { Events, Interaction, ButtonInteraction } from 'discord.js'
 	event: Events.InteractionCreate
 })
 export class EventListener extends Listener {
-	client = this.container.client
+	private client = this.container.client
 
 	public override async run(interaction: Interaction) {
 		if (!interaction.isButton()) return

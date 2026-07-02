@@ -6,7 +6,7 @@ import { foxApi } from '../../lib/util/constants'
 
 @ApplyOptions<Piece.Options>({ name: 'getfoxpicture' })
 export class GetFoxPicture extends Task {
-	client = this.container.client
+	private client = this.container.client
 
 	async exec() {
 		const obj: any = {

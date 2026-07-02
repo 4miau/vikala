@@ -6,7 +6,7 @@ import { Events, Message } from 'discord.js'
 	event: Events.MessageUpdate
 })
 export class EventListener extends Listener {
-	client = this.container.client
+	private client = this.container.client
 
 	public override async run(oldMessage: Message, newMessage: Message) {
 		if (oldMessage.partial || newMessage.partial) {

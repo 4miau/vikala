@@ -6,7 +6,7 @@ import { Events, GuildChannel } from 'discord.js'
 	event: Events.ChannelUpdate
 })
 export class EventListener extends Listener {
-	client = this.container.client
+	private client = this.container.client
 
 	public override async run(oldChannel: GuildChannel, newChannel: GuildChannel) {
 		if (oldChannel.partial || newChannel.partial) {

@@ -1,11 +1,11 @@
-import { Args } from '@sapphire/framework'
 import { ApplyOptions } from '@sapphire/decorators'
-import { EmbedBuilder, TextChannel, type Message } from 'discord.js'
+import { Args } from '@sapphire/framework'
 import { Subcommand } from '@sapphire/plugin-subcommands'
+import { EmbedBuilder, TextChannel, type Message } from 'discord.js'
 
-import { RawgGame, RawgGameResult } from '../../typings/@definitions/Rawg'
-import { getInput } from '../../lib/util/utilities'
 import { Colors } from '../../lib/util/Colors'
+import { getInput } from '../../lib/util/utilities'
+import { RawgGame, RawgGameResult } from '../../typings/@definitions/Rawg'
 
 @ApplyOptions<Subcommand.Options>({
 	name: 'rawg',
@@ -24,7 +24,7 @@ import { Colors } from '../../lib/util/Colors'
 	]
 })
 export class Rawg extends Subcommand {
-	client = this.container.client
+	private client = this.container.client
 	fetchGamesTask = this.client.tasks.get('rawggamesearch')
 	fetchGameTask = this.client.tasks.get('rawggamebyid')
 

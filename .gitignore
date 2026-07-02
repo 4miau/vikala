@@ -1,5 +1,6 @@
 .vscode
 .env
+.env.keys
 dist
 node_modules
 src/keys/*.json

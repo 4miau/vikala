@@ -6,7 +6,7 @@ import { Events, Guild } from 'discord.js'
 	event: Events.GuildUpdate
 })
 export class EventListener extends Listener {
-	client = this.container.client
+	private client = this.container.client
 
 	public override async run(oldGuild: Guild, newGuild: Guild) {
 		await this.client.events.guildUpdatedLog(newGuild)

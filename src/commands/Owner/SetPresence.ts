@@ -45,7 +45,7 @@ import { Colors } from '../../lib/util/Colors'
 	]
 })
 export class SetPresence extends Subcommand {
-	client = this.container.client
+	private client = this.container.client
 
 	public async messageSet(message: Message, args: Args) {
 		if (!message.channel.isSendable()) return

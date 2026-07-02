@@ -8,7 +8,7 @@ import ms from 'ms'
 
 @ApplyOptions<Piece.Options>({ name: 'roleemojisetup' })
 export class RoleEmojiSetupTask extends Task {
-	client = this.container.client
+	private client = this.container.client
 
 	public async exec(message: Message, groupName: string, role: Role): Promise<boolean> {
 		if (!message.guild || !message.channel.isSendable()) return false

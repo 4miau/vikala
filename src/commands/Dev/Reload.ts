@@ -25,7 +25,7 @@ import { Colors } from '../../lib/util/Colors'
 	preconditions: ['OwnerOnly']
 })
 export class Reload extends Command {
-	client = this.container.client
+	private client = this.container.client
 
 	public async messageRun(message: Message, args: Args) {
 		if (!message.channel.isSendable()) return

@@ -6,7 +6,7 @@ import { gogCatalogApi } from '../../lib/util/constants'
 
 @ApplyOptions<Piece.Options>({ name: 'getgoggame' })
 export default class GetGogGame extends Task {
-	client = this.container.client
+	private client = this.container.client
 
 	async exec(searchQuery: string, limit: number = 5) {
 		const obj = {

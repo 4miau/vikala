@@ -16,7 +16,7 @@ import { parseReminderInput } from '../../lib/util/reminderParser'
 	]
 })
 export class RemindmeCommand extends Command {
-	client = this.container.client
+	private client = this.container.client
 
 	public async messageRun(message: Message, args: Args) {
 		if (!message.channel.isSendable()) return

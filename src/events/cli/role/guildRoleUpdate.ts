@@ -6,7 +6,7 @@ import { Events, Role } from 'discord.js'
 	event: Events.GuildRoleUpdate
 })
 export class EventListener extends Listener {
-	client = this.container.client
+	private client = this.container.client
 
 	public override async run(oldRole: Role, newRole: Role) {
 		await this.client.events.roleUpdatedLog(oldRole, newRole)

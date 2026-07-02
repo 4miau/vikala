@@ -42,7 +42,7 @@ import { Subcommand } from '@sapphire/plugin-subcommands'
 	]
 })
 export class YouTube extends Subcommand {
-	client = this.container.client
+	private client = this.container.client
 
 	youtubeMsgList(message: Message) {
 		if (!message.channel.isSendable()) return

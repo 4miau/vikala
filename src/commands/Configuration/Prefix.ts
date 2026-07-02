@@ -17,7 +17,7 @@ import { Subcommand } from '@sapphire/plugin-subcommands'
 	]
 })
 export class Prefix extends Subcommand {
-	client = this.container.client
+	private client = this.container.client
 
 	public async prefixMsg(message: Message) {
 		if (!message.channel.isSendable()) return

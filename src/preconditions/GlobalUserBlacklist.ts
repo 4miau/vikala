@@ -4,7 +4,7 @@ import { ApplyOptions } from '@sapphire/decorators'
 
 ApplyOptions<Precondition.Options>({ name: 'GlobalUserBlacklist', position: 0 })
 export class GlobalUserBlacklist extends Precondition {
-	client = this.container.client
+	private client = this.container.client
 
 	public override messageRun(message: Message<boolean>, command: MessageCommand, context: PreconditionContext): PreconditionResult {
 		return this.isUserBlacklisted(message)

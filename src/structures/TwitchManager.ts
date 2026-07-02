@@ -235,10 +235,10 @@ export default class TwitchManager {
 			for (const streamer of streamers) {
 				try {
 					if (streamer.posted || (streamer.lastPosted && Date.now() - streamer.lastPosted < ms('5m'))) continue
-					const isLive = await this.isLive(streamer.name)
-					if (!isLive) continue
 
 					const stream = await this.getStream(streamer.name)
+					if (!stream) continue
+
 					const channel = guild.channels.cache.get(streamer.channel)
 					if (!channel?.isSendable()) continue
 
@@ -325,11 +325,9 @@ export default class TwitchManager {
 	// HELPERS
 
 	async getStreamerStatus(name: string): Promise<{ is_live: boolean; msg: Message<boolean>; stream?: TwitchStream | null }> {
-		const isLive = await this.isLive(name)
-		if (!isLive) return { is_live: false, msg: null, stream: null }
-
-
 		const stream = await this.getStream(name)
+		if (!stream) return { is_live: false, msg: null, stream: null }
+
 		const streamer = await this.getStreamer(name)
 
 		const msg = stream ? await this.fetchPostedMessage(streamer, this.client.guilds.cache.get(streamer.guildId)) : null

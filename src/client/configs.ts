@@ -58,7 +58,7 @@ export default class Components {
 		this.client.cases = new ModLogger(this.client)
 		this.client.events = new EventLogger(this.client)
 
-		this.client.queue = new Queue(this.client)
+		this.client.queue = new Queue(this.client, 500)
 
 		this.client.api = new APIManager(this.client, apiConfig)
 

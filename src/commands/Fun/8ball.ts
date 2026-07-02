@@ -1,9 +1,9 @@
-import { Args, Command } from '@sapphire/framework'
 import { ApplyOptions } from '@sapphire/decorators'
+import { Args, Command } from '@sapphire/framework'
 import type { Message } from 'discord.js'
+import { arrayRandom } from 'miau-utilities'
 
 import { eightBallReplies } from '../../lib/util/constants'
-import { arrayRandom } from 'miau-utilities'
 
 @ApplyOptions<Command.Options>({
 	name: '8ball',
@@ -15,7 +15,7 @@ import { arrayRandom } from 'miau-utilities'
 	]
 })
 export class EightBall extends Command {
-	client = this.container.client
+	private client = this.container.client
 
 	public async messageRun(message: Message, args: Args) {
 		if (!message.channel.isSendable()) return

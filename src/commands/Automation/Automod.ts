@@ -37,7 +37,7 @@ import { AUTOMOD_RULE_NAMES } from '../../lib/util/constants'
 	]
 })
 export class AutomodCommand extends Subcommand {
-	client = this.container.client
+	private client = this.container.client
 
 	public async messageEnable(message: Message) {
 		if (!message.guild || !message.channel.isSendable()) return

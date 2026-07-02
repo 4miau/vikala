@@ -19,7 +19,7 @@ import { Subcommand } from '@sapphire/plugin-subcommands'
 	]
 })
 export class CreateInvite extends Subcommand {
-	client = this.container.client
+	private client = this.container.client
 
 	public async newMsgInvite(message: Message) {
 		if (!message.channel.isSendable()) return

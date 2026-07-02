@@ -6,7 +6,7 @@ import { dogApi } from '../../lib/util/constants'
 
 @ApplyOptions<Piece.Options>({ name: 'getdogpicture' })
 export class GetDogPicture extends Task {
-	client = this.container.client
+	private client = this.container.client
 
 	async exec() {
 		const obj: any = {

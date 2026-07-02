@@ -4,7 +4,7 @@ import { ApplyOptions } from '@sapphire/decorators'
 
 ApplyOptions<Precondition.Options>({ name: 'Premium', position: 0 })
 export class Premium extends Precondition {
-	client = this.container.client
+	private client = this.container.client
 
 	public override messageRun(message: Message<boolean>, command: MessageCommand, context: PreconditionContext): PreconditionResult {
 		return this.isPremiumGuild(message.guild)

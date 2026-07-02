@@ -18,7 +18,7 @@ interface RoleMenuSetupData {
 
 @ApplyOptions<Piece.Options>({ name: 'rolemenuwizard' })
 export class RoleMenuWizardTask extends Task {
-	client = this.container.client
+	private client = this.container.client
 
 	public async exec(message: Message, groupName: string, targetChannel?: TextChannel, targetMessageId?: string): Promise<boolean> {
 		if (!message.guild || !message.channel.isSendable()) return false

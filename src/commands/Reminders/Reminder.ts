@@ -32,7 +32,7 @@ import type { IReminder } from '../../database/Reminder'
 	]
 })
 export class ReminderCommand extends Subcommand {
-	client = this.container.client
+	private client = this.container.client
 
 	// LIST
 	public async listMsg(message: Message) {

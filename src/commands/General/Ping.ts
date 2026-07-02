@@ -10,7 +10,7 @@ import { ApplyOptions } from '@sapphire/decorators'
 	usage: 'ping'
 })
 export class Ping extends Command {
-	client = this.container.client
+	private client = this.container.client
 
 	public async messageRun(message: Message) {
 		if (!message.channel.isSendable()) return

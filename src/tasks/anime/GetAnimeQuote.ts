@@ -6,7 +6,7 @@ import { animeQuotesApi } from '../../lib/util/constants'
 
 @ApplyOptions<Piece.Options>({ name: 'getanimequote' })
 export class GetAnimeQuote extends Task {
-	client = this.container.client
+	private client = this.container.client
 
 	async exec(...args: string[]) {
 		const obj: any = {

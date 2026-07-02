@@ -25,7 +25,7 @@ import Changelog from '../../database/Changelog'
 	]
 })
 export class ChangelogCommand extends Subcommand {
-	client = this.container.client
+	private client = this.container.client
 
 	public async addMsgEntry(message: Message, args: Args) {
 		if (!message.channel.isSendable()) return

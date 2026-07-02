@@ -10,7 +10,7 @@ import ms from 'ms'
 	description: 'Executes arbitrary code.'
 })
 export class Exec extends Command {
-	client = this.container.client
+	private client = this.container.client
 
 	public async messageRun(message: Message, args: Args) {
 		if (!message.channel.isSendable()) return

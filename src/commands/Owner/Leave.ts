@@ -11,7 +11,7 @@ import type { Message } from 'discord.js'
 	runIn: ['GUILD_ANY']
 })
 export class Leave extends Command {
-	client = this.container.client
+	private client = this.container.client
 
 	public async messageRun(message: Message) {
 		await message.guild.leave()

@@ -17,7 +17,7 @@ import { getInput, yes } from '../../lib/util/utilities'
 	preconditions: ['OwnerOnly']
 })
 export class ClearDatabase extends Command {
-	client = this.container.client
+	private client = this.container.client
 
 	public async messageRun(message: Message, args: Args) {
 		if (!message.channel.isSendable()) return

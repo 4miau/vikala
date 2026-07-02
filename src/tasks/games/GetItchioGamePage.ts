@@ -5,7 +5,7 @@ import Task from '../../lib/mods/Task'
 
 @ApplyOptions<Piece.Options>({ name: 'getitchiogamepage' })
 export default class getItchioGamePage extends Task {
-	client = this.container.client
+	private client = this.container.client
 
 	async exec(gameUrl: string) {
 		const obj = {

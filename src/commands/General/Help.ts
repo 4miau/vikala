@@ -21,7 +21,7 @@ import { Colors } from '../../lib/util/Colors'
 	options: ['category', 'cat']
 })
 export class Help extends Command {
-	client = this.container.client
+	private client = this.container.client
 	private static readonly COMMANDS_PER_PAGE = 6
 	private static readonly COLLECTOR_TIME = ms('5m')
 

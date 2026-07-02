@@ -9,7 +9,7 @@ import { EmbedBuilder, OAuth2Scopes, type Message } from 'discord.js'
 	usage: 'invite'
 })
 export class Invite extends Command {
-	client = this.container.client
+	private client = this.container.client
 
 	public async messageRun(message: Message) {
 		if (!message.channel.isSendable()) return

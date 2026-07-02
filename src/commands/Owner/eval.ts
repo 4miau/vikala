@@ -35,7 +35,7 @@ interface EvalResult {
 	preconditions: ['OwnerOnly']
 })
 export class Eval extends Command {
-	client = this.container.client
+	private client = this.container.client
 	private static readonly DEFAULT_TIMEOUT = ms('60s')
 	private static readonly MAX_OUTPUT_LENGTH = 2000
 

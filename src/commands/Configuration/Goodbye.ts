@@ -26,7 +26,7 @@ import { Colors } from '../../lib/util/Colors'
 	runIn: 'GUILD_TEXT'
 })
 export class GoodbyeCommand extends Subcommand {
-	client = this.container.client
+	private client = this.container.client
 
 	public async messageConfig(message: Message) {
 		if (!message.channel.isSendable()) return

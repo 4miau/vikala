@@ -37,7 +37,7 @@ import { arrayEmpty } from 'miau-utilities'
 	]
 })
 export class AutomodRuleCommand extends Subcommand {
-	client = this.container.client
+	private client = this.container.client
 
 	private readonly RULE_TYPES = AUTOMOD_RULE_TYPES
 	private readonly PUNISHMENTS = AUTOMOD_PUNISHMENTS

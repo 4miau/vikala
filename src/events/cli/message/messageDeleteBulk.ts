@@ -6,7 +6,7 @@ import { Events, Collection, Message, Snowflake, TextChannel } from 'discord.js'
 	event: Events.MessageBulkDelete
 })
 export class EventListener extends Listener {
-	client = this.container.client
+	private client = this.container.client
 
 	public override async run(messages: Collection<Snowflake, Message>) {
 		const message = messages.first()

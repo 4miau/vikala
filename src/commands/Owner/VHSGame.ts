@@ -44,7 +44,7 @@ import { Colors } from '../../lib/util/Colors'
 	]
 })
 export class VHSGame extends Subcommand {
-	client = this.container.client
+	private client = this.container.client
 
 	public async libraryViewMsg(message: Message, args: Args) {
 		if (!message.channel.isSendable()) return

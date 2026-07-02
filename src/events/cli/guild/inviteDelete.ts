@@ -6,7 +6,7 @@ import { Events, Invite, Guild } from 'discord.js'
 	event: Events.InviteDelete
 })
 export class EventListener extends Listener {
-	client = this.container.client
+	private client = this.container.client
 
 	public override async run(invite: Invite) {
 		if (!invite.guild) return

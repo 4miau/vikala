@@ -7,7 +7,7 @@ import { envs } from '../../lib/util/environmentVariables'
 
 @ApplyOptions<Piece.Options>({ name: 'rawggamesearch' })
 export default class RawgGameSearch extends Task {
-	client = this.container.client
+	private client = this.container.client
 
 	async exec(query: string) {
 		const obj = {

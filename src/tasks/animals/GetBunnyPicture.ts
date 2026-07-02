@@ -6,7 +6,7 @@ import { bunnyApi } from '../../lib/util/constants'
 
 @ApplyOptions<Piece.Options>({ name: 'getbunnypicture' })
 export class GetBunnyPicture extends Task {
-	client = this.container.client
+	private client = this.container.client
 
 	async exec() {
 		const obj: any = {

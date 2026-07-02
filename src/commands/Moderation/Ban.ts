@@ -1,7 +1,7 @@
+import { ApplyOptions } from '@sapphire/decorators'
 import { Args, Command } from '@sapphire/framework'
 import type { GuildMember, Message } from 'discord.js'
 
-import { ApplyOptions } from '@sapphire/decorators'
 import { getInput, yes } from '../../lib/util/utilities'
 
 @ApplyOptions<Command.Options>({
@@ -31,7 +31,7 @@ import { getInput, yes } from '../../lib/util/utilities'
 	runIn: ['GUILD_TEXT']
 })
 export class Ban extends Command {
-	client = this.container.client
+	private client = this.container.client
 
 	public async messageRun(message: Message, args: Args) {
 		const members = await args.repeat('member')
